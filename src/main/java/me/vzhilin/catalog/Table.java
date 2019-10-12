@@ -21,6 +21,10 @@ public final class Table {
         return schema.getName();
     }
 
+    public boolean hasColumn(String columnName) {
+        return columns.containsKey(columnName);
+    }
+
     public Column addColumn(String columnName, String columnType, int columnIndex, JDBCType jdbcType) {
         Column column = new Column(this, columnName, columnType, columnIndex, jdbcType);
         columns.put(columnName, column);

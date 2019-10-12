@@ -1,7 +1,10 @@
 package me.vzhilin.catalog;
 
 import java.sql.JDBCType;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public final class Column {
     private final String name;
@@ -9,6 +12,7 @@ public final class Column {
     private final Table table;
     private final int index;
     private final JDBCType jdbcType;
+    private final Set<ForeignKey> foreignKeys = new HashSet<>();
 
     public Column(Table table, String name, String dataType, int index, JDBCType jdbcType) {
         this.table = table;
@@ -28,6 +32,14 @@ public final class Column {
 
     public JDBCType getJdbcType() {
         return jdbcType;
+    }
+
+    public void addForeignKey(ForeignKey fk) {
+        foreignKeys.add(fk);
+    }
+
+    public Set<ForeignKey> getForeignKeys() {
+        return Collections.unmodifiableSet(foreignKeys);
     }
 
     @Override

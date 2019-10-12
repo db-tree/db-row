@@ -18,7 +18,12 @@ public class OracleDatabaseAdapter implements DatabaseAdapter {
         typeMapping.put("VARCHAR", JDBCType.VARCHAR);
         typeMapping.put("NUMBER", JDBCType.NUMERIC);
         typeMapping.put("INTEGER", JDBCType.INTEGER);
+        typeMapping.put("FLOAT", JDBCType.FLOAT);
+        typeMapping.put("DOUBLE", JDBCType.DOUBLE);
+        typeMapping.put("DECIMAL", JDBCType.DECIMAL);
+
         typeMapping.put("DATE", JDBCType.DATE);
+        typeMapping.put("CHAR", JDBCType.CHAR);
         typeMapping.put("BLOB", JDBCType.BLOB);
         typeMapping.put("CLOB", JDBCType.CLOB);
 
@@ -36,6 +41,7 @@ public class OracleDatabaseAdapter implements DatabaseAdapter {
         matchers.put(JDBCType.VARCHAR, textMatcher);
         matchers.put(JDBCType.DATE, new NeverConverter()); // TODO DATES
         matchers.put(JDBCType.BLOB, new NeverConverter());
+        matchers.put(JDBCType.CHAR, new NeverConverter()); // TODO
     }
 
     @Override

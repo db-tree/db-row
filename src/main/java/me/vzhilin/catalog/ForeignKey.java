@@ -1,6 +1,11 @@
 package me.vzhilin.catalog;
 
+import com.google.common.base.Joiner;
 import me.vzhilin.util.BiMap;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
 
 public final class ForeignKey {
     private final String fkName;
@@ -25,6 +30,17 @@ public final class ForeignKey {
 
     public Table getPkTable() {
         return toTable;
+    }
+
+    public String getFkAsString() {
+        List<String> columns = new ArrayList<>();
+        columnMapping.forEach(new BiConsumer<PrimaryKeyColumn, ForeignKeyColumn>() {
+            @Override
+            public void accept(PrimaryKeyColumn primaryKeyColumn, ForeignKeyColumn foreignKeyColumn) {
+                columns.add(foreignKeyColumn.getColumn().getName());
+            }
+        });
+        return Joiner.on(',').join(columns);
     }
 
     /**

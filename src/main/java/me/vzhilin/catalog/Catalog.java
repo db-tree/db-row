@@ -15,6 +15,10 @@ public final class Catalog {
         return schemas.computeIfAbsent(name, Schema::new);
     }
 
+    public boolean hasTable(String schemaName, String tableName) {
+        return schemas.containsKey(schemaName) && schemas.get(schemaName).hasTable(tableName);
+    }
+
     public void forEachTable(Consumer<Table> consumer) {
         schemas.forEach((name, schema) -> schema.forEach(consumer));
     }

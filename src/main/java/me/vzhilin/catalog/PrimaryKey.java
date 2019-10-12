@@ -19,6 +19,10 @@ public final class PrimaryKey {
         return columns.get(name); // TODO notNullCheck
     }
 
+    public boolean hasColumn(String name) {
+        return columns.containsKey(name);
+    }
+
     public void addColumn(Column column, int keySeq) {
         columns.put(column.getName(), new PrimaryKeyColumn(this, column, keySeq));
     }

@@ -29,6 +29,10 @@ public final class Schema {
         return Collections.unmodifiableSet(tables.keySet());
     }
 
+    public boolean hasTable(String tableName) {
+        return tables.containsKey(tableName);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
