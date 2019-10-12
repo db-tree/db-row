@@ -4,12 +4,10 @@ import com.google.common.base.Joiner;
 import me.vzhilin.adapter.DatabaseAdapter;
 import me.vzhilin.catalog.*;
 import me.vzhilin.util.BiMap;
-import org.apache.commons.dbutils.AbstractQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 
-import javax.sql.DataSource;
 import java.io.Closeable;
 import java.sql.*;
 import java.util.*;
@@ -17,13 +15,13 @@ import java.util.function.BiConsumer;
 
 public final class RowContext {
     private final QueryRunner runner;
-    private final Catalog catalog;
     private final DatabaseAdapter adapter;
+    private final Connection connection;
 
-    public RowContext(DatabaseAdapter adapter, QueryRunner runner, Catalog catalog) {
+    public RowContext(DatabaseAdapter adapter, Connection connection, QueryRunner runner) {
         this.adapter = adapter;
+        this.connection = connection;
         this.runner = runner;
-        this.catalog = catalog;
     }
 
     public Map<Column, Object> fetchValues(ObjectKey key) {
@@ -56,7 +54,7 @@ public final class RowContext {
         sb.append(Joiner.on(" AND ").join(parts));
         Map<String, Object> rawResult;
         try {
-            rawResult = runner.query(sb.toString(), new MapHandler(), params.toArray());
+            rawResult = runner.query(connection, sb.toString(), new MapHandler(), params.toArray());
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
@@ -92,14 +90,14 @@ public final class RowContext {
 
         query.append(Joiner.on(" AND ").join(parts));
         try {
-            return runner.query(query.toString(), new ScalarHandler<>(), params.toArray());
+            return runner.query(connection, query.toString(), new ScalarHandler<>(), params.toArray());
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
     }
 
     public Iterable<Row> backReferences(Row pkRow, ForeignKey fk) {
-        return new RowIterable(runner, pkRow, fk);
+        return new RowIterable(pkRow, fk);
     }
 
     public List<Row> selectRows(List<ObjectKey> keys) {
@@ -121,10 +119,9 @@ public final class RowContext {
     private final class RowIterable implements Iterable<Row> {
         private final List<Object> params;
         private final String query;
-        private final DataSource ds;
         private final Table fkTable;
 
-        public RowIterable(QueryRunner runner, Row pkRow, ForeignKey fk) {
+        public RowIterable(Row pkRow, ForeignKey fk) {
             StringBuilder queryBuilder = new StringBuilder("SELECT ");
 
             Table pkTable = fk.getPkTable();
@@ -143,28 +140,18 @@ public final class RowContext {
             queryBuilder.append(" WHERE ").append(Joiner.on(" AND ").join(expressions));
 
             this.fkTable = fkTable;
-            this.ds = runner.getDataSource();
             this.query = queryBuilder.toString();
         }
 
         @Override
         public Iterator<Row> iterator() {
-            Connection conn = null;
             try {
-                conn = ds.getConnection();
-                PreparedStatement st = conn.prepareStatement(query);
+                PreparedStatement st = connection.prepareStatement(query);
                 for (int i = 0; i < params.size(); i++) {
                     st.setObject(i + 1, params.get(i));
                 }
-                return new RowIterator(fkTable, st.executeQuery(), conn, st);
+                return new RowIterator(fkTable, st.executeQuery(), connection, st);
             } catch (SQLException ex) {
-                if (conn != null) {
-                    try {
-                        conn.close();
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
                 throw new RuntimeException(ex);
             }
         }

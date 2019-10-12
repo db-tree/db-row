@@ -10,23 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class OracleDatabaseAdapter implements DatabaseAdapter {
-    private final Map<String, JDBCType> typeMapping = new HashMap<>();
     private final Map<JDBCType, ValueConverter> matchers = new HashMap<>();
 
     public OracleDatabaseAdapter() {
-        typeMapping.put("VARCHAR2", JDBCType.VARCHAR);
-        typeMapping.put("VARCHAR", JDBCType.VARCHAR);
-        typeMapping.put("NUMBER", JDBCType.NUMERIC);
-        typeMapping.put("INTEGER", JDBCType.INTEGER);
-        typeMapping.put("FLOAT", JDBCType.FLOAT);
-        typeMapping.put("DOUBLE", JDBCType.DOUBLE);
-        typeMapping.put("DECIMAL", JDBCType.DECIMAL);
-
-        typeMapping.put("DATE", JDBCType.DATE);
-        typeMapping.put("CHAR", JDBCType.CHAR);
-        typeMapping.put("BLOB", JDBCType.BLOB);
-        typeMapping.put("CLOB", JDBCType.CLOB);
-
         ValueConverter doubleMatcher = new BigDecimalConverter();
         matchers.put(JDBCType.NUMERIC, doubleMatcher);
         matchers.put(JDBCType.FLOAT, doubleMatcher);
@@ -46,11 +32,7 @@ public class OracleDatabaseAdapter implements DatabaseAdapter {
 
     @Override
     public JDBCType getType(String typeName) {
-        JDBCType type = typeMapping.get(typeName);
-        if (type == null) {
-            throw new NullPointerException("unknown type: " + typeName);
-        }
-        return type;
+        return JDBCType.valueOf(typeName);
     }
 
     @Override

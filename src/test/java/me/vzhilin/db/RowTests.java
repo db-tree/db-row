@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
@@ -70,7 +71,8 @@ public class RowTests {
         Column b1 = tableB.getColumn("fk_b_1");
         Column b2 = tableB.getColumn("fk_b_2");
 
-        RowContext ctx = new RowContext(oracle, runner, catalog);
+        Connection conn = ds.getConnection();
+        RowContext ctx = new RowContext(oracle, conn, runner);
         ObjectKeyBuilder builder = new ObjectKeyBuilder(tableA);
         builder.set("pk_a_1", 100);
         builder.set("pk_a_2", 200);

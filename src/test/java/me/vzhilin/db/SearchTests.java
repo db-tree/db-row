@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Locale;
@@ -85,7 +86,8 @@ public class SearchTests {
         runner.update("INSERT INTO B(id, n1) VALUES (3, 400)");
 
         Catalog catalog = new CatalogLoader(oracle).load(ds, "TEST");
-        RowContext ctx = new RowContext(oracle, runner, catalog);
+        Connection conn = ds.getConnection();
+        RowContext ctx = new RowContext(oracle, conn, runner);
 
         Table tableA = catalog.getSchema("TEST").getTable("A");
         Table tableB = catalog.getSchema("TEST").getTable("B");
