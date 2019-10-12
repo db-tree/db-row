@@ -19,11 +19,21 @@ public final class RowContext {
     private final Connection connection;
     private final Catalog catalog;
 
+    private final Map<String, Object> attributes = new HashMap<>();
+
     public RowContext(Catalog catalog, DatabaseAdapter adapter, Connection connection, QueryRunner runner) {
         this.catalog = catalog;
         this.adapter = adapter;
         this.connection = connection;
         this.runner = runner;
+    }
+
+    public void setAttribute(String key, Object value) {
+        attributes.put(key, value);
+    }
+
+    public Object getAttribute(String key, Object value) {
+        return attributes.get(key);
     }
 
     public Map<Column, Object> fetchValues(ObjectKey key) {
