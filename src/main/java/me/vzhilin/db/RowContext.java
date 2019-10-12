@@ -17,8 +17,10 @@ public final class RowContext {
     private final QueryRunner runner;
     private final DatabaseAdapter adapter;
     private final Connection connection;
+    private final Catalog catalog;
 
-    public RowContext(DatabaseAdapter adapter, Connection connection, QueryRunner runner) {
+    public RowContext(Catalog catalog, DatabaseAdapter adapter, Connection connection, QueryRunner runner) {
+        this.catalog = catalog;
         this.adapter = adapter;
         this.connection = connection;
         this.runner = runner;
@@ -114,6 +116,14 @@ public final class RowContext {
 
     public DatabaseAdapter getAdapter() {
         return adapter;
+    }
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public Catalog getCatalog() {
+        return catalog;
     }
 
     private final class RowIterable implements Iterable<Row> {

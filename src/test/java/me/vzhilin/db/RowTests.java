@@ -72,7 +72,7 @@ public class RowTests {
         Column b2 = tableB.getColumn("fk_b_2");
 
         Connection conn = ds.getConnection();
-        RowContext ctx = new RowContext(oracle, conn, runner);
+        RowContext ctx = new RowContext(catalog, oracle, conn, runner);
         ObjectKeyBuilder builder = new ObjectKeyBuilder(tableA);
         builder.set("pk_a_1", 100);
         builder.set("pk_a_2", 200);

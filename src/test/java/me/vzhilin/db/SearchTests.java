@@ -87,12 +87,12 @@ public class SearchTests {
 
         Catalog catalog = new CatalogLoader(oracle).load(ds, "TEST");
         Connection conn = ds.getConnection();
-        RowContext ctx = new RowContext(oracle, conn, runner);
+        RowContext ctx = new RowContext(catalog, oracle, conn, runner);
 
         Table tableA = catalog.getSchema("TEST").getTable("A");
         Table tableB = catalog.getSchema("TEST").getTable("B");
 
-        Map<Table, Long> occurences = new CountOccurences(catalog, runner, oracle).count("200");
+        Map<Table, Long> occurences = new CountOccurences(ctx).count("200");
         assertThat(occurences, hasEntry(tableA, 1L));
         assertThat(occurences, hasEntry(tableB, 2L));
 

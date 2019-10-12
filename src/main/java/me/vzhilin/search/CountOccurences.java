@@ -5,6 +5,7 @@ import me.vzhilin.adapter.DatabaseAdapter;
 import me.vzhilin.adapter.ValueConverter;
 import me.vzhilin.catalog.Catalog;
 import me.vzhilin.catalog.Table;
+import me.vzhilin.db.RowContext;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
@@ -19,11 +20,13 @@ public final class CountOccurences {
     private final QueryRunner runner;
     private final Catalog catalog;
     private final DatabaseAdapter databaseAdapter;
+    private final RowContext ctx;
 
-    public CountOccurences(Catalog catalog, QueryRunner runner, DatabaseAdapter adapter) {
-        this.catalog = catalog;
-        this.runner = runner;
-        this.databaseAdapter = adapter;
+    public CountOccurences(RowContext ctx) {
+        this.ctx = ctx;
+        this.catalog = ctx.getCatalog();
+        this.runner = ctx.getRunner();
+        this.databaseAdapter = ctx.getAdapter();
     }
 
     public Map<Table, Long> count(String text) {
@@ -47,7 +50,7 @@ public final class CountOccurences {
                 return result;
             }
             String query = Joiner.on(" UNION ALL ").join(queries);
-            for (Map<String, Object> m: runner.query(query, new MapListHandler(), parameterValues.toArray())) {
+            for (Map<String, Object> m: runner.query(ctx.getConnection(), query, new MapListHandler(), parameterValues.toArray())) {
                 Number n = (Number) m.get("N");
                 Number c = (Number) m.get("C");
                 Table table = tables.get(n.intValue());

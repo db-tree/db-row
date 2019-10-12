@@ -69,7 +69,7 @@ public final class SearchInTable {
             String q = String.format("SELECT %s from %s WHERE %s", joinedPks, qualifiedTableName, exp);
 
             try {
-                Connection conn = ctx.getRunner().getDataSource().getConnection();
+                Connection conn = ctx.getConnection();
                 PreparedStatement st = conn.prepareStatement(q);
                 for (int i = 0; i < parameters.size(); i++) {
                     Object param = parameters.get(i); // TODO check types
@@ -105,7 +105,7 @@ public final class SearchInTable {
                                 try {
                                     rs.close();
                                     st.close();
-                                    conn.close(); // FIXME REUSE CONNECTION
+//                                    conn.close(); // FIXME REUSE CONNECTION
                                 } catch (SQLException e) {
                                     throw new RuntimeException(e);
                                 }
