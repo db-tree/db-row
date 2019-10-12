@@ -32,7 +32,7 @@ public final class RowContext {
         attributes.put(key, value);
     }
 
-    public Object getAttribute(String key, Object value) {
+    public Object getAttribute(String key) {
         return attributes.get(key);
     }
 

@@ -15,6 +15,10 @@ public final class Row {
         this.key = key;
     }
 
+    public RowContext getContext() {
+        return ctx;
+    }
+
     public Object get(Column column) {
         ensureLoaded();
 

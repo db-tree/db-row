@@ -61,7 +61,9 @@ public class CatalogLoader {
                         String pkName = primaryKeys.getString("PK_NAME");
                         pk = new PrimaryKey(Optional.ofNullable(pkName), table);
                     }
-                    pk.addColumn(table.getColumn(columnName), keySeq);
+                    Column pkColumn = table.getColumn(columnName);
+                    pk.addColumn(pkColumn, keySeq);
+                    pkColumn.setPrimaryKey(pk);
                 }
                 table.setPk(pk);
                 primaryKeys.close();
@@ -104,6 +106,7 @@ public class CatalogLoader {
                             fkNameToColumns.forEach((fkName, cols) -> {
                                 ForeignKey foreignKey = fkTable.addForeignKey(fkName, table, cols);
                                 pk.addForeignKey(foreignKey);
+                                cols.forEach((pkc, fkc) -> fkc.getColumn().addForeignKey(foreignKey));
                             }));
                 }
             } catch (SQLException ex) {
