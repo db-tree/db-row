@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 
 public final class Schema {
     private final String name;
-    private final Map<String, Table> tables = new HashMap<>();
+    private final Map<String, Table> tables = new LinkedHashMap<>();
 
     public Schema(String name) {
         this.name = name;

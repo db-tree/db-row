@@ -12,7 +12,7 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +45,7 @@ public final class CountOccurences {
         });
 
         try {
-            Map<Table, Long> result = new HashMap<>();
+            Map<Table, Long> result = new LinkedHashMap<>();
             if (tables.isEmpty()) {
                 return result;
             }

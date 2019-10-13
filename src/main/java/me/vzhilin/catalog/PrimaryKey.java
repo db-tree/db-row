@@ -7,7 +7,7 @@ import static java.util.stream.Collectors.toSet;
 public final class PrimaryKey {
     private final Optional<String> name;
     private final Table table;
-    private final Map<String, PrimaryKeyColumn> columns = new HashMap<>();
+    private final Map<String, PrimaryKeyColumn> columns = new LinkedHashMap<>();
     private final Set<ForeignKey> foreignKeys = new HashSet<>();
 
     public PrimaryKey(Optional<String> name, Table table) {

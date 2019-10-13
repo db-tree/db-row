@@ -50,6 +50,10 @@ public final class ForeignKey {
         return columnMapping;
     }
 
+    public int size() {
+        return columnMapping.size();
+    }
+
     @Override
     public String toString() {
         return "ForeignKey{" +

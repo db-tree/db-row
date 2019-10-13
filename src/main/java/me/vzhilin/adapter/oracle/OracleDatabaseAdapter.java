@@ -6,12 +6,12 @@ import me.vzhilin.catalog.Table;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class OracleDatabaseAdapter implements DatabaseAdapter {
-    private final Map<String, JDBCType> typeMapping = new HashMap<>();
-    private final Map<JDBCType, ValueConverter> matchers = new HashMap<>();
+    private final Map<String, JDBCType> typeMapping = new LinkedHashMap<>();
+    private final Map<JDBCType, ValueConverter> matchers = new LinkedHashMap<>();
 
     public OracleDatabaseAdapter() {
         typeMapping.put("VARCHAR2", JDBCType.VARCHAR);

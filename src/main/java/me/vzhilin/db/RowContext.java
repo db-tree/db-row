@@ -19,7 +19,7 @@ public final class RowContext {
     private final Connection connection;
     private final Catalog catalog;
 
-    private final Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new LinkedHashMap<>();
 
     public RowContext(Catalog catalog, DatabaseAdapter adapter, Connection connection, QueryRunner runner) {
         this.catalog = catalog;
@@ -71,7 +71,7 @@ public final class RowContext {
             throw new RuntimeException(ex);
         }
 
-        Map<Column, Object> result = new HashMap<>(rawResult.size());
+        Map<Column, Object> result = new LinkedHashMap<>(rawResult.size());
         rawResult.forEach((name, o) -> result.put(table.getColumn(name), o));
         return result;
     }
@@ -234,7 +234,6 @@ public final class RowContext {
             try {
                 st.close();
                 rs.close();
-                conn.close();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }

@@ -7,7 +7,7 @@ import java.util.*;
 public final class Row {
     private final ObjectKey key;
     private final RowContext ctx;
-    private final Map<Column, Object> values = new HashMap<>();
+    private final Map<Column, Object> values = new LinkedHashMap<>();
     private boolean loaded;
 
     public Row(RowContext ctx, ObjectKey key) {
@@ -39,14 +39,14 @@ public final class Row {
     }
 
     public Map<PrimaryKeyColumn, Object> getKeyValues() {
-        HashMap<PrimaryKeyColumn, Object> rs = new HashMap<>();
+        HashMap<PrimaryKeyColumn, Object> rs = new LinkedHashMap<>();
         PrimaryKey pk = key.getTable().getPrimaryKey().get();
         pk.getColumns().forEach(pkc -> rs.put(pkc, values.get(pkc.getColumn())));
         return rs;
     }
 
     public Map<ForeignKey, Row> forwardReferences() {
-        Map<ForeignKey, Row> result = new HashMap<>();
+        Map<ForeignKey, Row> result = new LinkedHashMap<>();
         for (ForeignKey fk: key.getTable().getForeignKeys().values()) {
             Object[] keyColumns = new Object[fk.getPkTable().getPrimaryKey().get().getColumnCount()];
 
@@ -69,7 +69,7 @@ public final class Row {
 
     public Map<ForeignKey, Number> backwardReferencesCount() {
         Set<ForeignKey> foreignKeys = key.getTable().getPrimaryKey().get().getForeignKeys();
-        Map<ForeignKey, Number> result = new HashMap<>(foreignKeys.size());
+        Map<ForeignKey, Number> result = new LinkedHashMap<>(foreignKeys.size());
         foreignKeys.forEach(fk -> result.put(fk, ctx.backReferencesCount(this, fk)));
         return result;
     }

@@ -8,7 +8,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -80,7 +80,7 @@ public class CatalogLoader {
                     ResultSet keys = metadata.getExportedKeys(null, schemaName, table.getName());
 
                     // fkTable, fkName, columnMapping
-                    Map<Table, Map<String, BiMap<PrimaryKeyColumn, ForeignKeyColumn>>> columnMapping = new HashMap<>();
+                    Map<Table, Map<String, BiMap<PrimaryKeyColumn, ForeignKeyColumn>>> columnMapping = new LinkedHashMap<>();
 
                     while (keys.next()) {
                         String pkColumnName = keys.getString("PKCOLUMN_NAME");
@@ -96,9 +96,9 @@ public class CatalogLoader {
                         ForeignKeyColumn fkColumn = new ForeignKeyColumn(null, fkTable.getColumn(fkColumnName), fkPos);
 
                         columnMapping.
-                                computeIfAbsent(fkTable, t -> new HashMap<>()).
-                                computeIfAbsent(fkName, t -> new BiMap<>()).
-                                put(pkColumn, fkColumn);
+                            computeIfAbsent(fkTable, t -> new LinkedHashMap<>()).
+                            computeIfAbsent(fkName, t -> new BiMap<>()).
+                            put(pkColumn, fkColumn);
                     }
                     keys.close();
 

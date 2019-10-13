@@ -2,12 +2,12 @@ package me.vzhilin.catalog;
 
 import com.google.common.collect.Iterables;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
 public final class Catalog {
-    private final Map<String, Schema> schemas = new HashMap<>();
+    private final Map<String, Schema> schemas = new LinkedHashMap<>();
 
     public Catalog() { }
 
@@ -17,6 +17,10 @@ public final class Catalog {
 
     public boolean hasTable(String schemaName, String tableName) {
         return schemas.containsKey(schemaName) && schemas.get(schemaName).hasTable(tableName);
+    }
+
+    public Table getTable(String schemaName, String tableName) {
+        return schemas.get(schemaName).getTable(tableName);
     }
 
     public void forEachTable(Consumer<Table> consumer) {

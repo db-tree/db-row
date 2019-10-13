@@ -1,13 +1,13 @@
 package me.vzhilin.util;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
 public final class BiMap<A, B> {
-    private final Map<A, B> forwardMap = new HashMap<>();
-    private final Map<B, A> reverseMap = new HashMap<>();
+    private final Map<A, B> forwardMap = new LinkedHashMap<>();
+    private final Map<B, A> reverseMap = new LinkedHashMap<>();
 
     public void put(A k, B v) {
         forwardMap.put(k, v);
@@ -24,6 +24,10 @@ public final class BiMap<A, B> {
 
     public void forEach(BiConsumer<? super A, ? super B> action) {
         forwardMap.forEach(action);
+    }
+
+    public int size() {
+        return forwardMap.size();
     }
 
     @Override
