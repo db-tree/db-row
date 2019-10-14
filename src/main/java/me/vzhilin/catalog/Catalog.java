@@ -27,7 +27,17 @@ public final class Catalog {
         schemas.forEach((name, schema) -> schema.forEach(consumer));
     }
 
+    public void forEachSchema(Consumer<Schema> schemaConsumer) {
+        schemas.values().forEach(schemaConsumer);
+    }
+
     public Schema getOnlySchema() {
         return Iterables.getOnlyElement(schemas.values());
+    }
+
+    public Schema addSchema(String schemaName) {
+        Schema schema = new Schema(schemaName);
+        schemas.put(schemaName, schema);
+        return schema;
     }
 }

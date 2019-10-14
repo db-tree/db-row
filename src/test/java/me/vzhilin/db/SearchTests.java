@@ -5,6 +5,7 @@ import me.vzhilin.adapter.oracle.OracleDatabaseAdapter;
 import me.vzhilin.catalog.Catalog;
 import me.vzhilin.catalog.CatalogLoader;
 import me.vzhilin.catalog.Table;
+import me.vzhilin.catalog.filter.AcceptSchema;
 import me.vzhilin.search.CountOccurences;
 import me.vzhilin.search.SearchInTable;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -85,7 +86,7 @@ public class SearchTests {
         runner.update("INSERT INTO B(id, n1) VALUES (2, 200)");
         runner.update("INSERT INTO B(id, n1) VALUES (3, 400)");
 
-        Catalog catalog = new CatalogLoader(oracle).load(ds, "TEST");
+        Catalog catalog = new CatalogLoader(oracle).load(ds, new AcceptSchema("TEST"));
         Connection conn = ds.getConnection();
         RowContext ctx = new RowContext(catalog, oracle, conn, runner);
 

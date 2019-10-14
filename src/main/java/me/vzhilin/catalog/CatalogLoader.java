@@ -1,6 +1,7 @@
 package me.vzhilin.catalog;
 
 import me.vzhilin.adapter.DatabaseAdapter;
+import me.vzhilin.catalog.filter.AcceptAny;
 import me.vzhilin.util.BiMap;
 
 import javax.sql.DataSource;
@@ -11,6 +12,7 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class CatalogLoader {
     private final DatabaseAdapter adapter;
@@ -19,36 +21,67 @@ public class CatalogLoader {
         this.adapter = adapter;
     }
 
-    public Catalog load(DataSource ds, String schemaName) throws SQLException {
+    public Catalog load(DataSource ds) throws SQLException {
+        return load(ds, new AcceptAny());
+    }
+
+    public Catalog load(DataSource ds, CatalogFilter filter) throws SQLException {
         Catalog catalog = new Catalog();
         Connection conn = ds.getConnection();
         DatabaseMetaData metadata = conn.getMetaData();
-        loadTables(catalog, schemaName, metadata);
+        loadTables(catalog, filter, metadata);
         conn.close();
         return catalog;
     }
 
-    private void loadTables(Catalog catalog, String schemaName, DatabaseMetaData metadata) throws SQLException {
-        ResultSet tables = metadata.getTables(null, schemaName, null, new String[]{"TABLE"});
-        while (tables.next()) {
-            Schema schema = catalog.getSchema(tables.getString("TABLE_SCHEM"));
-            schema.addTable(tables.getString("TABLE_NAME"));
-        }
-        tables.close();
-
-        ResultSet columns = metadata.getColumns(null, schemaName, null, null);
-        while (columns.next()) {
-            Schema schema = catalog.getSchema(columns.getString("TABLE_SCHEM"));
-            String tableName = columns.getString("TABLE_NAME");
-            String columnName = columns.getString("COLUMN_NAME");
-            String columnType = columns.getString("TYPE_NAME");
-            int columnIndex = columns.getInt("ORDINAL_POSITION") - 1;
-            Table table = schema.getTable(tableName);
-            if (table != null) {
-                table.addColumn(columnName, columnType, columnIndex, adapter.getType(columnType));
+    private void loadTables(Catalog catalog, CatalogFilter filter, DatabaseMetaData metadata) throws SQLException {
+        ResultSet schemas = metadata.getSchemas();
+        while (schemas.next()) {
+            String schemaName = schemas.getString("TABLE_SCHEM");
+            if (filter.acceptSchema(schemaName)) {
+                catalog.addSchema(schemaName);
             }
         }
-        columns.close();
+        schemas.close();
+
+        catalog.forEachSchema(new Consumer<Schema>() {
+              @Override
+              public void accept(Schema schema) {
+                  try {
+                      ResultSet tables = metadata.getTables(null, schema.getName(), null, null);
+                      while (tables.next()) {
+                          String tableName = tables.getString("TABLE_NAME");
+                          String tableType = tables.getString("TABLE_TYPE");
+
+                          if ("TABLE".equals(tableType) && filter.acceptTable(schema.getName(), tableName)) {
+                              schema.addTable(tableName);
+                          }
+                      }
+                      tables.close();
+                  } catch (SQLException ex) {
+                      throw new RuntimeException(ex);
+                  }
+              }
+          }
+        );
+
+        catalog.forEachTable(new Consumer<Table>() {
+            @Override
+            public void accept(Table table) {
+                try {
+                    ResultSet columns = metadata.getColumns(null, table.getSchemaName(), table.getName(), null);
+                    while (columns.next()) {
+                        String columnName = columns.getString("COLUMN_NAME");
+                        String columnType = columns.getString("TYPE_NAME");
+                        int columnIndex = columns.getInt("ORDINAL_POSITION") - 1;
+                        table.addColumn(columnName, columnType, columnIndex, adapter.getType(columnType));
+                    }
+                    columns.close();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
 
         catalog.forEachTable(table -> {
             try {
@@ -77,7 +110,7 @@ public class CatalogLoader {
                 Optional<PrimaryKey> maybePk = table.getPrimaryKey();
                 if (maybePk.isPresent()) {
                     PrimaryKey pk = maybePk.get();
-                    ResultSet keys = metadata.getExportedKeys(null, schemaName, table.getName());
+                    ResultSet keys = metadata.getExportedKeys(null, table.getSchemaName(), table.getName());
 
                     // fkTable, fkName, columnMapping
                     Map<Table, Map<String, BiMap<PrimaryKeyColumn, ForeignKeyColumn>>> columnMapping = new LinkedHashMap<>();

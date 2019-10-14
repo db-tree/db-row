@@ -210,7 +210,7 @@ public final class RowContext {
 
             pkColumns.forEach(name -> {
                 try {
-                    kv[pk.getColumn(name).getPrimaryKeyIndex()] = rs.getString(name);
+                    kv[pk.getColumn(name).getPrimaryKeyIndex()] = rs.getObject(name);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }

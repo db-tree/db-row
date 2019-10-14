@@ -3,9 +3,13 @@ package me.vzhilin.adapter.oracle;
 import me.vzhilin.adapter.DatabaseAdapter;
 import me.vzhilin.adapter.ValueConverter;
 import me.vzhilin.catalog.Table;
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -72,13 +76,18 @@ public class OracleDatabaseAdapter implements DatabaseAdapter {
         }
     }
 
+    @Override
+    public String defaultSchema(Connection conn) throws SQLException {
+        return new QueryRunner().query(conn,"select sys_context('userenv', 'current_schema') from dual", new ScalarHandler<>());
+    }
+
     private static final class BigDecimalConverter implements ValueConverter {
         @Override
         public Object fromString(String text) {
             try {
                 return new BigDecimal(text);
             } catch (NumberFormatException e) {
-                return false;
+                return null;
             }
         }
     }
@@ -89,7 +98,7 @@ public class OracleDatabaseAdapter implements DatabaseAdapter {
             try {
                 return Long.parseLong(text);
             } catch (NumberFormatException ex) {
-                return false;
+                return null;
             }
         }
     }
