@@ -45,26 +45,36 @@ public final class Row {
         return rs;
     }
 
+    // TODO cache references
     public Map<ForeignKey, Row> forwardReferences() {
         Map<ForeignKey, Row> result = new LinkedHashMap<>();
         for (ForeignKey fk: key.getTable().getForeignKeys().values()) {
-            Object[] keyColumns = new Object[fk.getPkTable().getPrimaryKey().get().getColumnCount()];
-
-            final boolean[] hasNull = {false};
-            fk.getColumnMapping().forEach((pkColumn, fkColumn) -> {
-                Object value = get(fkColumn.getColumn());
-                if (!hasNull[0] && value != null) {
-                    keyColumns[pkColumn.getPrimaryKeyIndex()] = value;
-                } else {
-                    hasNull[0] = true;
-                }
-            });
-            if (hasNull[0]) {
+            Row reference = forwardReference(fk);
+            if (reference == null) {
                 continue;
             }
-            result.put(fk, new Row(ctx, new ObjectKey(fk.getPkTable(), new Key(keyColumns))));
+            result.put(fk, reference);
         }
         return result;
+    }
+
+    public Row forwardReference(ForeignKey fk) {
+        Object[] keyColumns = new Object[fk.getPkTable().getPrimaryKey().get().getColumnCount()];
+
+        final boolean[] hasNull = {false};
+        fk.getColumnMapping().forEach((pkColumn, fkColumn) -> {
+            Object value = get(fkColumn.getColumn());
+            if (!hasNull[0] && value != null) {
+                keyColumns[pkColumn.getPrimaryKeyIndex()] = value;
+            } else {
+                hasNull[0] = true;
+            }
+        });
+        if (hasNull[0]) {
+            return null;
+        }
+        Row reference = new Row(ctx, new ObjectKey(fk.getPkTable(), new Key(keyColumns))); // TODO check if exists
+        return reference;
     }
 
     public Map<ForeignKey, Number> backwardReferencesCount() {
