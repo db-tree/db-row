@@ -1,6 +1,5 @@
 package me.vzhilin.catalog;
 
-import java.sql.JDBCType;
 import java.util.*;
 
 public final class Column {
@@ -8,16 +7,14 @@ public final class Column {
     private final String dataType;
     private final Table table;
     private final int index;
-    private final JDBCType jdbcType;
     private final Set<ForeignKey> foreignKeys = new HashSet<>();
     private Optional<PrimaryKey> primaryKey = Optional.empty();
 
-    public Column(Table table, String name, String dataType, int index, JDBCType jdbcType) {
+    public Column(Table table, String name, String dataType, int index) {
         this.table = table;
         this.name = name;
         this.dataType = dataType;
         this.index = index;
-        this.jdbcType = jdbcType;
     }
 
     public String getName() {
@@ -26,10 +23,6 @@ public final class Column {
 
     public String getDataType() {
         return dataType;
-    }
-
-    public JDBCType getJdbcType() {
-        return jdbcType;
     }
 
     public void addForeignKey(ForeignKey fk) {

@@ -2,6 +2,7 @@ package me.vzhilin.search;
 
 import com.google.common.base.Joiner;
 import me.vzhilin.adapter.DatabaseAdapter;
+import me.vzhilin.adapter.ValueConverter;
 import me.vzhilin.catalog.PrimaryKey;
 import me.vzhilin.catalog.PrimaryKeyColumn;
 import me.vzhilin.catalog.Table;
@@ -10,7 +11,10 @@ import me.vzhilin.db.ObjectKey;
 import me.vzhilin.db.Row;
 import me.vzhilin.db.RowContext;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -31,10 +35,9 @@ public final class SearchInTable {
     private String buildExpressions(Table table, List<Object> parameterValues, String text) {
         List<String> expressions = new ArrayList<>();
         DatabaseAdapter adapter = ctx.getAdapter();
+        final ValueConverter conv = adapter.getConverter();
         table.getColumns().forEach((name, column) -> {
-            JDBCType jdbcType = column.getJdbcType();
-            Object v = adapter.getConverter(jdbcType).fromString(text);
-
+            Object v = conv.fromString(text, column.getDataType());
             if (v != null) {
                 expressions.add(name + " = ?");
                 parameterValues.add(text);

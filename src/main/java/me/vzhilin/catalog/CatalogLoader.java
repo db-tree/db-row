@@ -74,7 +74,7 @@ public class CatalogLoader {
                         String columnName = columns.getString("COLUMN_NAME");
                         String columnType = columns.getString("TYPE_NAME");
                         int columnIndex = columns.getInt("ORDINAL_POSITION") - 1;
-                        table.addColumn(columnName, columnType, columnIndex, adapter.getType(columnType));
+                        table.addColumn(columnName, columnType, columnIndex);
                     }
                     columns.close();
                 } catch (SQLException ex) {

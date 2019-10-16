@@ -9,7 +9,6 @@ import me.vzhilin.db.RowContext;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
-import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -66,13 +65,12 @@ public final class CountOccurences {
     }
 
     private String buildExpressions(Table table, List<Object> parameterValues, String text) {
-        List<String> expressions = new ArrayList<>();
-        table.getColumns().forEach((name, column) -> {
-            JDBCType jdbcType = column.getJdbcType();
+        final List<String> expressions = new ArrayList<>();
+        final ValueConverter conv = databaseAdapter.getConverter();
 
-            ValueConverter matcher = databaseAdapter.getConverter(jdbcType);
+        table.getColumns().forEach((name, column) -> {
             Object v;
-            if ((v = matcher.fromString(text)) != null) {
+            if ((v = conv.fromString(text, column.getDataType())) != null) {
                 expressions.add(name + " = ?");
                 parameterValues.add(v);
             }

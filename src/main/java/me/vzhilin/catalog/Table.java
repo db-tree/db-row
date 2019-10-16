@@ -2,7 +2,6 @@ package me.vzhilin.catalog;
 
 import me.vzhilin.util.BiMap;
 
-import java.sql.JDBCType;
 import java.util.*;
 
 public final class Table {
@@ -25,8 +24,12 @@ public final class Table {
         return columns.containsKey(columnName);
     }
 
-    public Column addColumn(String columnName, String columnType, int columnIndex, JDBCType jdbcType) {
-        Column column = new Column(this, columnName, columnType, columnIndex, jdbcType);
+    public boolean hasForeignKey(String name) {
+        return foreignKeys.containsKey(name);
+    }
+
+    public Column addColumn(String columnName, String columnType, int columnIndex) {
+        Column column = new Column(this, columnName, columnType, columnIndex);
         columns.put(columnName, column);
         return column;
     }
