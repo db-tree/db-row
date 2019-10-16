@@ -40,7 +40,7 @@ public final class SearchInTable {
             Object v = conv.fromString(text, column.getDataType());
             if (v != null) {
                 expressions.add(name + " = ?");
-                parameterValues.add(text);
+                parameterValues.add(v);
             }
         });
         return Joiner.on(" OR ").join(expressions);
