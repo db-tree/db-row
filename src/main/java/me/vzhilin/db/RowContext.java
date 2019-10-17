@@ -62,7 +62,6 @@ public final class RowContext {
             }
         });
 
-
         sb.append(Joiner.on(" AND ").join(parts));
         Map<String, Object> rawResult;
         try {
@@ -141,7 +140,7 @@ public final class RowContext {
         private final String query;
         private final Table fkTable;
 
-        public RowIterable(Row pkRow, ForeignKey fk) {
+        private RowIterable(Row pkRow, ForeignKey fk) {
             StringBuilder queryBuilder = new StringBuilder("SELECT ");
 
             Table pkTable = fk.getPkTable();
@@ -165,15 +164,39 @@ public final class RowContext {
 
         @Override
         public Iterator<Row> iterator() {
+            ResultSet rs;
+            PreparedStatement st;
             try {
-                PreparedStatement st = connection.prepareStatement(query);
-                for (int i = 0; i < params.size(); i++) {
-                    st.setObject(i + 1, params.get(i));
-                }
-                return new RowIterator(fkTable, st.executeQuery(), connection, st);
+                st = connection.prepareStatement(query);
             } catch (SQLException ex) {
-                throw new RuntimeException(ex);
+                throw new QueryException("failed to prepare statement", query, ex);
             }
+
+            for (int i = 0; i < params.size(); i++) {
+                Object parameterValue = params.get(i);
+                try {
+                    st.setObject(i + 1, parameterValue);
+                } catch (SQLException ex) {
+                    closeSilently(st);
+                    throw new QueryException("unable to set parameter[" + i + "] " + parameterValue, query, ex);
+                }
+            }
+
+            try {
+                rs = st.executeQuery();
+            } catch (SQLException ex) {
+                throw new QueryException("unable to execute query", query, ex);
+            }
+
+            return new RowIterator(fkTable, rs, connection, st);
+        }
+    }
+
+    private void closeSilently(AutoCloseable c) {
+        try {
+            c.close();
+        } catch (Exception ex) {
+            // TODO Logger.error
         }
     }
 
@@ -194,7 +217,7 @@ public final class RowContext {
             try {
                 hasNext = rs.next();
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new QueryException("database error", e);
             }
         }
 
@@ -212,7 +235,7 @@ public final class RowContext {
                 try {
                     kv[pk.getColumn(name).getPrimaryKeyIndex()] = rs.getObject(name);
                 } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                    throw new QueryException("database error: ResultSet.getObject(" + name + ")", e);
                 }
             });
             ObjectKey key = new ObjectKey(pkTable, new Key(kv));
@@ -220,7 +243,7 @@ public final class RowContext {
                 hasNext = rs.next();
             } catch (SQLException e) {
                 close();
-                throw new RuntimeException(e);
+                throw new QueryException("database error: ResultSet.next()", e);
             }
             if (!hasNext) {
                 close();
@@ -230,13 +253,8 @@ public final class RowContext {
 
         @Override
         public void close() {
-            // TODO proper closing
-            try {
-                st.close();
-                rs.close();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+            closeSilently(rs);
+            closeSilently(st);
         }
     }
 }

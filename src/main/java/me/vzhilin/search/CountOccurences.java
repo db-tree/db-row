@@ -7,6 +7,7 @@ import me.vzhilin.catalog.Catalog;
 import me.vzhilin.catalog.CatalogFilter;
 import me.vzhilin.catalog.Table;
 import me.vzhilin.catalog.filter.AcceptAny;
+import me.vzhilin.db.QueryException;
 import me.vzhilin.db.RowContext;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapListHandler;
@@ -47,12 +48,12 @@ public final class CountOccurences {
             count(tables, queries, parameterValues, filter);
         }
 
+        Map<Table, Long> result = new LinkedHashMap<>();
+        if (tables.isEmpty()) {
+            return result;
+        }
+        String query = Joiner.on(" UNION ALL ").join(queries);
         try {
-            Map<Table, Long> result = new LinkedHashMap<>();
-            if (tables.isEmpty()) {
-                return result;
-            }
-            String query = Joiner.on(" UNION ALL ").join(queries);
             for (Map<String, Object> m: runner.query(ctx.getConnection(), query, new MapListHandler(), parameterValues.toArray())) {
                 Number n = (Number) m.get("N");
                 Number c = (Number) m.get("C");
@@ -64,7 +65,7 @@ public final class CountOccurences {
             }
             return result;
         } catch (SQLException ex) {
-            throw new RuntimeException(ex);
+            throw new QueryException("query failed", query, ex);
         }
     }
 

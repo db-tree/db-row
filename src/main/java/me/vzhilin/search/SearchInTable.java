@@ -8,10 +8,7 @@ import me.vzhilin.catalog.PrimaryKey;
 import me.vzhilin.catalog.PrimaryKeyColumn;
 import me.vzhilin.catalog.Table;
 import me.vzhilin.catalog.filter.AcceptAny;
-import me.vzhilin.db.Key;
-import me.vzhilin.db.ObjectKey;
-import me.vzhilin.db.Row;
-import me.vzhilin.db.RowContext;
+import me.vzhilin.db.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -88,15 +85,32 @@ public final class SearchInTable {
 
             String q = String.format("SELECT %s from %s WHERE %s", joinedPks, qualifiedTableName, exp);
 
+            Connection conn = ctx.getConnection();
+            final PreparedStatement st;
             try {
-                Connection conn = ctx.getConnection();
-                PreparedStatement st = conn.prepareStatement(q);
-                for (int i = 0; i < parameters.size(); i++) {
-                    Object param = parameters.get(i); // TODO check types
-                    st.setObject(i + 1, param);
-                }
+                st = conn.prepareStatement(q);
+            } catch (SQLException e) {
+                throw new QueryException("failed to prepare query", q, e);
+            }
 
-                ResultSet rs = st.executeQuery();
+            for (int i = 0; i < parameters.size(); i++) {
+                Object parameterValue = parameters.get(i); // TODO check types
+                try {
+                    st.setObject(i + 1, parameterValue);
+                } catch (SQLException e) {
+                    closeSilently(st);
+                    throw new QueryException("unable to set parameter[" + i + "] " + parameterValue, q, e);
+                }
+            }
+
+            final ResultSet rs;
+            try {
+                rs = st.executeQuery();
+            } catch (SQLException e) {
+                closeSilently(st);
+                throw new QueryException("unable to execute query", q, e);
+            }
+            try {
                 return new Iterator<Row>() {
                     boolean hasNext = rs.next();
                     @Override
@@ -108,10 +122,12 @@ public final class SearchInTable {
                     public Row next() {
                         Object[] keyColumns = new Object[pk.getColumnCount()];
                         pk.getColumns().forEach(pkc -> {
+                            String name = pkc.getName();
+
                             try {
-                                keyColumns[pkc.getPrimaryKeyIndex()] = rs.getObject(pkc.getName());
+                                keyColumns[pkc.getPrimaryKeyIndex()] = rs.getObject(name);
                             } catch (SQLException ex) {
-                                throw new RuntimeException(ex);
+                                throw new QueryException("database error: ResultSet.getObject(" + name + ")", ex);
                             }
                         });
 
@@ -121,18 +137,13 @@ public final class SearchInTable {
                         try {
                             hasNext = rs.next();
                             if (!hasNext) {
-                                try {
-                                    rs.close();
-                                    st.close();
-//                                    conn.close(); // FIXME REUSE CONNECTION
-                                } catch (SQLException e) {
-                                    throw new RuntimeException(e);
-                                }
+                                closeSilently(rs);
+                                closeSilently(st);
                             }
 
                             return r;
                         } catch (SQLException ex) {
-                            throw new RuntimeException(ex);
+                            throw new QueryException("database error: ResultSet.next()", ex);
                         }
                     }
                 };
@@ -140,6 +151,14 @@ public final class SearchInTable {
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
+        }
+    }
+
+    private void closeSilently(AutoCloseable c) {
+        try {
+            c.close();
+        } catch (Exception ex) {
+            // TODO Logger.error
         }
     }
 }
