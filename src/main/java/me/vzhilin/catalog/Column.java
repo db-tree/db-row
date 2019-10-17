@@ -17,6 +17,14 @@ public final class Column {
         this.index = index;
     }
 
+    public String getSchema() {
+        return table.getSchemaName();
+    }
+
+    public String getTableName() {
+        return table.getName();
+    }
+
     public String getName() {
         return name;
     }

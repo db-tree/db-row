@@ -1,6 +1,7 @@
 package me.vzhilin.catalog;
 
 public interface CatalogFilter {
-    boolean acceptSchema(String schemaName);
-    boolean acceptTable(String schemaName, String tableName);
+    boolean acceptSchema(String schema);
+    boolean acceptTable(String schema, String table);
+    boolean acceptColumn(String schema, String table, String column);
 }

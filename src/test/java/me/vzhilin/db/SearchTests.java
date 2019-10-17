@@ -93,17 +93,17 @@ public class SearchTests {
         Table tableA = catalog.getSchema("TEST").getTable("A");
         Table tableB = catalog.getSchema("TEST").getTable("B");
 
-        Map<Table, Long> occurences = new CountOccurences(ctx).count("200");
+        Map<Table, Long> occurences = new CountOccurences(ctx, "200").count();
         assertThat(occurences, hasEntry(tableA, 1L));
         assertThat(occurences, hasEntry(tableB, 2L));
 
-        Iterable<Row> aResults = new SearchInTable(ctx, tableA).search("200");
+        Iterable<Row> aResults = new SearchInTable(ctx, tableA, "200").search();
         Iterator<Row> aIterator = aResults.iterator();
         Row a1 = aIterator.next();
         assertThat(a1.get("ID"), equalTo(new BigDecimal(2)));
         assertFalse(aIterator.hasNext());
 
-        Iterable<Row> bResults = new SearchInTable(ctx, tableB).search("200");
+        Iterable<Row> bResults = new SearchInTable(ctx, tableB, "200").search();
         Iterator<Row> bIterator = bResults.iterator();
         Row b1 = bIterator.next();
         Row b2 = bIterator.next();

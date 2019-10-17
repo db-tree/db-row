@@ -23,7 +23,12 @@ public final class PostgresqlAdapter implements DatabaseAdapter {
 
     @Override
     public String qualifiedTableName(Table table) {
-        return table.getName();
+        String schemaName = table.getSchemaName();
+        if (schemaName != null) {
+            return String.format("\"%s\".\"%s\"", schemaName, table.getName());
+        } else {
+            return String.format("\"%s\"", table.getName());
+        }
     }
 
     @Override

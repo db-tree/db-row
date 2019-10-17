@@ -27,4 +27,9 @@ public final class AcceptSchema implements CatalogFilter {
     public boolean acceptTable(String schemaName, String tableName) {
         return acceptSchema(schemaName);
     }
+
+    @Override
+    public boolean acceptColumn(String schema, String table, String column) {
+        return acceptTable(schema, table);
+    }
 }
