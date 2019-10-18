@@ -20,7 +20,7 @@ public final class ObjectKeyBuilder {
     }
 
     public ObjectKey build() {
-        // TODO check if all columns not null
+        // TODO check if all values are not null
         return new ObjectKey(table, new Key(keyColumns));
     }
 }
