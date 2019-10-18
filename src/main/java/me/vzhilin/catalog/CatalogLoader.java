@@ -35,14 +35,25 @@ public class CatalogLoader {
     }
 
     private void loadTables(Catalog catalog, CatalogFilter filter, DatabaseMetaData metadata) throws SQLException {
-        ResultSet schemas = metadata.getSchemas();
-        while (schemas.next()) {
-            String schemaName = schemas.getString("TABLE_SCHEM");
-            if (filter.acceptSchema(schemaName)) {
-                catalog.addSchema(schemaName);
+        if (isMariaDb(metadata.getDriverName())) {
+            try (ResultSet catalogs = metadata.getCatalogs()) {
+                while (catalogs.next()) {
+                    String schemaName = catalogs.getString("TABLE_CAT");
+                    if (filter.acceptSchema(schemaName)) {
+                        catalog.addSchema(schemaName);
+                    }
+                }
+            }
+        } else {
+            try (ResultSet schemas = metadata.getSchemas()) {
+                while (schemas.next()) {
+                    String schemaName = schemas.getString("TABLE_SCHEM");
+                    if (filter.acceptSchema(schemaName)) {
+                        catalog.addSchema(schemaName);
+                    }
+                }
             }
         }
-        schemas.close();
 
         catalog.forEachSchema(new Consumer<Schema>() {
               @Override
@@ -121,6 +132,9 @@ public class CatalogLoader {
                         String fkColumnName = keys.getString("FKCOLUMN_NAME");
                         String fkName = keys.getString("FK_NAME");
                         String schema = keys.getString("FKTABLE_SCHEM");
+                        if (schema == null) {
+                            schema = table.getSchemaName();
+                        }
                         int fkPos = keys.getInt("KEY_SEQ");
 
                         Table fkTable = catalog.getSchema(schema).getTable(fkTableName);
@@ -146,5 +160,9 @@ public class CatalogLoader {
                 throw new RuntimeException(ex);
             }
         });
+    }
+
+    private boolean isMariaDb(String driverName) {
+        return driverName.contains("MariaDB");
     }
 }

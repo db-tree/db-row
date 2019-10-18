@@ -85,8 +85,7 @@ public class PostgresqlTests {
             Iterable<Row> s = new SearchInTable(ctx, count.entrySet().iterator().next().getKey(), textValue).search();
             Iterator<Row> it = s.iterator();
             assertTrue(it.hasNext());
-//            Object v = it.next().get("v");
-//            assertEquals(value, v);
+//            assertEquals(value, v); TODO
         }
     }
 }
