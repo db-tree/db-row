@@ -75,7 +75,7 @@ public final class CountOccurences {
                 int n = tables.size();
                 String tableName = databaseAdapter.qualifiedTableName(table);
                 String exp = buildExpressions(table, parameterValues, filter);
-                if (!parameterValues.isEmpty()) {
+                if (!exp.isEmpty()) {
                     queries.add(String.format("select %d as N, COUNT(*) as C FROM %s WHERE %s", n, tableName, exp));
                     tables.add(table);
                 }

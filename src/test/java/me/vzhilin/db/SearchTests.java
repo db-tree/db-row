@@ -10,9 +10,9 @@ import me.vzhilin.search.CountOccurences;
 import me.vzhilin.search.SearchInTable;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.QueryRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -21,10 +21,10 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class SearchTests {
     static {
@@ -33,7 +33,7 @@ public class SearchTests {
     private QueryRunner runner;
     private BasicDataSource ds;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         ds = new BasicDataSource();
         ds.setDriverClassName("oracle.jdbc.OracleDriver");
@@ -43,7 +43,7 @@ public class SearchTests {
         runner = new QueryRunner(ds);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws SQLException {
         runner.update("DROP TABLE A");
         runner.update("DROP TABLE B");

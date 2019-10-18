@@ -6,24 +6,24 @@ import me.vzhilin.adapter.oracle.OracleDatabaseAdapter;
 import me.vzhilin.catalog.*;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.QueryRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
 
 public class RowTests {
     private QueryRunner runner;
     private BasicDataSource ds;
 
-    @Before
+    @BeforeAll
     public void setUp() {
         ds = new BasicDataSource();
         ds.setDriverClassName("org.sqlite.JDBC");
@@ -31,7 +31,7 @@ public class RowTests {
         runner = new QueryRunner(ds);
     }
 
-    @After
+    @AfterAll
     public void tearDown() throws SQLException {
         ds.close();
     }
