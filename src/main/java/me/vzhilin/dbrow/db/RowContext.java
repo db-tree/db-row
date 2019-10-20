@@ -77,15 +77,9 @@ public final class RowContext {
 
     public Number backReferencesCount(Row row, ForeignKey foreignKey) {
         Table table = foreignKey.getTable();
-        String tableName = table.getName();
-
         StringBuilder query = new StringBuilder("SELECT COUNT(1) FROM ");
-        String schemaName = table.getSchemaName();
-        if (schemaName != null) {
-            query.append(schemaName).append(".");
-        }
 
-        query.append(tableName);
+        query.append(adapter.qualifiedTableName(table));
         query.append(" WHERE ");
 
         Map<PrimaryKeyColumn, Object> vs = row.getKeyValues();
@@ -104,6 +98,35 @@ public final class RowContext {
             return runner.query(connection, query.toString(), new ScalarHandler<>(), params.toArray());
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
+        }
+    }
+
+    /**
+     * @param key row key
+     * @return true if row exists
+     */
+    public boolean exists(ObjectKey key) {
+        Table table = key.getTable();
+        StringBuilder query = new StringBuilder("SELECT COUNT(1) FROM ");
+
+        query.append(adapter.qualifiedTableName(table));
+        query.append(" WHERE ");
+
+        Collection<PrimaryKeyColumn> keyColumns = key.getTable().getPrimaryKey().get().getColumns();
+
+        List<String> parts = new ArrayList<>(keyColumns.size());
+        List<Object> params = new ArrayList<>(keyColumns.size());
+        for (PrimaryKeyColumn pkc: keyColumns) {
+            parts.add(pkc.getName() + " = ?");
+            params.add(key.getKey().getKeyColumn(pkc.getPrimaryKeyIndex()));
+        }
+        query.append(Joiner.on(" AND ").join(parts));
+        String sql = query.toString();
+        try {
+            Number c = runner.query(connection, sql, new ScalarHandler<>(), params.toArray());
+            return c.longValue() > 0;
+        } catch (SQLException e) {
+            throw new QueryException("Database error", sql, e);
         }
     }
 
@@ -142,8 +165,6 @@ public final class RowContext {
 
         private RowIterable(Row pkRow, ForeignKey fk) {
             StringBuilder queryBuilder = new StringBuilder("SELECT ");
-
-            Table pkTable = fk.getPkTable();
             Table fkTable = fk.getTable();
 
             params = new ArrayList<>();
