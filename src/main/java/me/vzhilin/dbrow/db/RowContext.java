@@ -28,11 +28,11 @@ public final class RowContext {
         this.runner = runner;
     }
 
-    public void setAttribute(String key, Object value) {
+    public synchronized void setAttribute(String key, Object value) {
         attributes.put(key, value);
     }
 
-    public Object getAttribute(String key) {
+    public synchronized Object getAttribute(String key) {
         return attributes.get(key);
     }
 
