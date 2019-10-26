@@ -41,9 +41,9 @@ public final class Row {
         return Collections.unmodifiableMap(values);
     }
 
-    public Map<PrimaryKeyColumn, Object> getKeyValues() {
-        HashMap<PrimaryKeyColumn, Object> rs = new LinkedHashMap<>();
-        PrimaryKey pk = key.getTable().getPrimaryKey().get();
+    public Map<UniqueConstraintColumn, Object> getKeyValues() {
+        HashMap<UniqueConstraintColumn, Object> rs = new LinkedHashMap<>();
+        UniqueConstraint pk = key.getCons();
         pk.getColumns().forEach(pkc -> rs.put(pkc, values.get(pkc.getColumn())));
         return rs;
     }
@@ -56,12 +56,20 @@ public final class Row {
 
     public Map<ForeignKey, Number> backwardReferencesCount() {
         if (!backwardReferencesLoaded) {
-            Set<ForeignKey> foreignKeys = key.getTable().getPrimaryKey().get().getForeignKeys();
+            Set<ForeignKey> foreignKeys = getForeignKeys();
             foreignKeys.forEach(fk -> backwardReferencesCount.put(fk, ctx.backReferencesCount(this, fk)));
             backwardReferencesLoaded = true;
         }
 
         return Collections.unmodifiableMap(backwardReferencesCount);
+    }
+
+    private Set<ForeignKey> getForeignKeys() {
+        Set<ForeignKey> foreignKeys = new HashSet<>();
+        for (UniqueConstraint uniq: key.getTable().getUniqueConstraints()) {
+            foreignKeys.addAll(uniq.getForeignKeys());
+        }
+        return foreignKeys;
     }
 
     public Iterable<Row> backwardReference(ForeignKey fk) {
@@ -73,7 +81,7 @@ public final class Row {
             loaded = true;
             values.putAll(ctx.fetchValues(key));
 
-            for (ForeignKey fk: key.getTable().getForeignKeys().values()) {
+            for (ForeignKey fk: key.getTable().getForeignKeys()) {
                 Row reference = loadReference(fk);
                 if (reference == null) {
                     continue;
@@ -89,13 +97,14 @@ public final class Row {
     }
 
     public Row loadReference(ForeignKey fk) {
-        Object[] keyColumns = new Object[fk.getPkTable().getPrimaryKey().get().getColumnCount()];
+        UniqueConstraint uniq = fk.getUniqueConstraint();
+        Map<UniqueConstraintColumn, Object> keyColumns = new HashMap<>();
 
         final boolean[] hasNull = {false};
         fk.getColumnMapping().forEach((pkColumn, fkColumn) -> {
             Object value = get(fkColumn.getColumn());
             if (!hasNull[0] && value != null) {
-                keyColumns[pkColumn.getPrimaryKeyIndex()] = value;
+                keyColumns.put(pkColumn, value);
             } else {
                 hasNull[0] = true;
             }
@@ -103,7 +112,7 @@ public final class Row {
         if (hasNull[0]) {
             return null;
         }
-        ObjectKey key = new ObjectKey(fk.getPkTable(), new Key(keyColumns));
+        ObjectKey key = new ObjectKey(uniq, keyColumns);
         if (ctx.exists(key)) {
             return new Row(ctx, key);
         } else {

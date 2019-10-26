@@ -3,12 +3,13 @@ package me.vzhilin.dbrow.catalog;
 import me.vzhilin.dbrow.util.BiMap;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public final class Table {
     private final String name;
     private final Schema schema;
-    private Optional<PrimaryKey> primaryKey;
-    private final Map<String, ForeignKey> foreignKeys = new LinkedHashMap<>();
+    private final Set<UniqueConstraint> uniqueConstraints = new LinkedHashSet<>();
+    private final Set<ForeignKey> foreignKeys = new LinkedHashSet<>();
     private final Map<String, Column> columns = new LinkedHashMap<>();
 
     public Table(Schema schema, String name) {
@@ -24,9 +25,9 @@ public final class Table {
         return columns.containsKey(columnName);
     }
 
-    public boolean hasForeignKey(String name) {
-        return foreignKeys.containsKey(name);
-    }
+//    public boolean hasForeignKey(String name) {
+//        return foreignKeys.containsKey(name);
+//    }
 
     public Column addColumn(String columnName, String columnType, int columnIndex) {
         Column column = new Column(this, columnName, columnType, columnIndex);
@@ -38,22 +39,35 @@ public final class Table {
         return columns.get(columnName);
     }
 
-    public PrimaryKeyColumn getPrimaryKeyColumn(String name) {
-        return getPrimaryKey().get().getColumn(name);
+//    public PrimaryKeyColumn getPrimaryKeyColumn(String name) {
+//        return getPrimaryKey().get().getColumn(name);
+//    }
+
+//    public Optional<PrimaryKey> getPrimaryKey() {
+//        return primaryKey;
+//    }
+
+//    public void setPk(PrimaryKey pk) {
+//        primaryKey = Optional.ofNullable(pk);
+//    }
+
+//    public ForeignKey addForeignKey(String fkName, Table toTable, BiMap<PrimaryKeyColumn, ForeignKeyColumn> cols) {
+//        ForeignKey foreignKey = new ForeignKey(fkName, this, toTable, cols);
+//        foreignKeys.put(fkName, foreignKey);
+//        return foreignKey;
+//    }
+
+    public ForeignKey addForeignKey(String fkName, UniqueConstraint unique, BiMap<UniqueConstraintColumn, Column> mapping) {
+        BiMap<UniqueConstraintColumn, ForeignKeyColumn> fkMapping = new BiMap<>();
+        ForeignKey fkConstraint = new ForeignKey(fkName, this, unique);
+        mapping.forEach((ucc, column) -> fkMapping.put(ucc, new ForeignKeyColumn(fkConstraint, column)));
+        fkConstraint.setMapping(fkMapping);
+        foreignKeys.add(fkConstraint);
+        return fkConstraint;
     }
 
-    public Optional<PrimaryKey> getPrimaryKey() {
-        return primaryKey;
-    }
-
-    public void setPk(PrimaryKey pk) {
-        primaryKey = Optional.ofNullable(pk);
-    }
-
-    public ForeignKey addForeignKey(String fkName, Table toTable, BiMap<PrimaryKeyColumn, ForeignKeyColumn> cols) {
-        ForeignKey foreignKey = new ForeignKey(fkName, this, toTable, cols);
-        foreignKeys.put(fkName, foreignKey);
-        return foreignKey;
+    public ForeignKey addForeignKey(UniqueConstraint unique, BiMap<UniqueConstraintColumn, Column> mapping) {
+        return addForeignKey("", unique, mapping);
     }
 
     public String getName() {
@@ -64,8 +78,29 @@ public final class Table {
         return Collections.unmodifiableMap(columns);
     }
 
-    public Map<String, ForeignKey> getForeignKeys() {
-        return Collections.unmodifiableMap(foreignKeys);
+    public Set<ForeignKey> getForeignKeys() {
+        return Collections.unmodifiableSet(foreignKeys);
+    }
+
+    public int getColumnCount() {
+        return columns.size();
+    }
+
+    public UniqueConstraint addUniqueConstraint(String constraintName, String... columns) {
+        Set<UniqueConstraintColumn> ucc = Arrays.stream(columns).map(name -> {
+            return new UniqueConstraintColumn(getColumn(name)); // TODO check not null
+        }).collect(Collectors.toSet());
+        UniqueConstraint cons = new UniqueConstraint(this, ucc, constraintName);
+        uniqueConstraints.add(cons);
+        return cons;
+    }
+
+    public UniqueConstraint addUniqueConstraint(String... columns) {
+        return addUniqueConstraint("", columns);
+    }
+
+    public Set<UniqueConstraint> getUniqueConstraints() {
+        return Collections.unmodifiableSet(uniqueConstraints);
     }
 
     @Override
@@ -87,7 +122,7 @@ public final class Table {
         return Objects.hash(name, schema);
     }
 
-    public int getColumnCount() {
-        return columns.size();
+    public UniqueConstraint getAnyUniqueConstraint() {
+        return uniqueConstraints.iterator().next();
     }
 }

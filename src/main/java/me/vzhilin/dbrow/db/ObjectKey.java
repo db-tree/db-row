@@ -1,31 +1,35 @@
 package me.vzhilin.dbrow.db;
 
-import me.vzhilin.dbrow.catalog.PrimaryKeyColumn;
 import me.vzhilin.dbrow.catalog.Table;
+import me.vzhilin.dbrow.catalog.UniqueConstraint;
+import me.vzhilin.dbrow.catalog.UniqueConstraintColumn;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
 public final class ObjectKey {
-    private final Table table;
-    private final Key key;
+    private final Map<UniqueConstraintColumn, Object> key;
+    private final UniqueConstraint cons;
 
-    public ObjectKey(Table table, Key key) {
-        this.table = table;
+    public ObjectKey( UniqueConstraint cons, Map<UniqueConstraintColumn, Object> key) {
+        this.cons = cons;
         this.key = key;
     }
 
+    public UniqueConstraint getCons() {
+        return cons;
+    }
+
     public Table getTable() {
-        return table;
+        return cons.getTable();
     }
 
-    public Key getKey() {
-        return key;
+    public Map<UniqueConstraintColumn, Object> getKey() {
+        return Collections.unmodifiableMap(key);
     }
 
-    public void forEach(BiConsumer<PrimaryKeyColumn, Object> action) {
-        for (PrimaryKeyColumn pkc: table.getPrimaryKey().get().getColumns()) {
-            int columnIndex = pkc.getPrimaryKeyIndex();
-            action.accept(pkc, key.getKeyColumn(columnIndex));
-        }
+    public void forEach(BiConsumer<UniqueConstraintColumn, Object> action) {
+        key.forEach(action);
     }
 }

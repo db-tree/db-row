@@ -1,6 +1,9 @@
 package me.vzhilin.dbrow.catalog;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 public final class Column {
     private final String name;
@@ -8,7 +11,6 @@ public final class Column {
     private final Table table;
     private final int index;
     private final Set<ForeignKey> foreignKeys = new HashSet<>();
-    private Optional<PrimaryKey> primaryKey = Optional.empty();
 
     public Column(Table table, String name, String dataType, int index) {
         this.table = table;
@@ -35,14 +37,6 @@ public final class Column {
 
     public void addForeignKey(ForeignKey fk) {
         foreignKeys.add(fk);
-    }
-
-    public void setPrimaryKey(PrimaryKey pk) {
-        primaryKey = Optional.of(pk);
-    }
-
-    public Optional<PrimaryKey> getPrimaryKey() {
-        return primaryKey;
     }
 
     public Set<ForeignKey> getForeignKeys() {

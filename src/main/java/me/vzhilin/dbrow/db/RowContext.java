@@ -11,7 +11,6 @@ import org.apache.commons.dbutils.handlers.ScalarHandler;
 import java.io.Closeable;
 import java.sql.*;
 import java.util.*;
-import java.util.function.BiConsumer;
 
 public final class RowContext {
     private final QueryRunner runner;
@@ -50,16 +49,15 @@ public final class RowContext {
         sb.append(table.getName());
 
         sb.append(" WHERE ");
-        int primaryKeyColumnCount = table.getPrimaryKey().get().getColumnCount();
+
+        UniqueConstraint pk = table.getAnyUniqueConstraint();
+        int primaryKeyColumnCount = pk.getColumnCount();
         List<String> parts = new ArrayList<>(primaryKeyColumnCount);
         List<Object> params = new ArrayList<>(primaryKeyColumnCount);
 
-        key.forEach(new BiConsumer<PrimaryKeyColumn, Object>() {
-            @Override
-            public void accept(PrimaryKeyColumn column, Object value) {
-                parts.add(column.getName() + " = ? ");
-                params.add(value);
-            }
+        key.forEach((column, value) -> {
+            parts.add(column.getName() + " = ? ");
+            params.add(value);
         });
 
         sb.append(Joiner.on(" AND ").join(parts));
@@ -82,8 +80,8 @@ public final class RowContext {
         query.append(adapter.qualifiedTableName(table));
         query.append(" WHERE ");
 
-        Map<PrimaryKeyColumn, Object> vs = row.getKeyValues();
-        BiMap<PrimaryKeyColumn, ForeignKeyColumn> mapping = foreignKey.getColumnMapping();
+        Map<UniqueConstraintColumn, Object> vs = row.getKeyValues();
+        BiMap<UniqueConstraintColumn, ForeignKeyColumn> mapping = foreignKey.getColumnMapping();
 
         List<String> parts = new ArrayList<>(vs.size());
         List<Object> params = new ArrayList<>(vs.size());
@@ -107,18 +105,19 @@ public final class RowContext {
      */
     public boolean exists(ObjectKey key) {
         Table table = key.getTable();
+        UniqueConstraint uniq = key.getCons();
+
         StringBuilder query = new StringBuilder("SELECT COUNT(1) FROM ");
 
         query.append(adapter.qualifiedTableName(table));
         query.append(" WHERE ");
 
-        Collection<PrimaryKeyColumn> keyColumns = key.getTable().getPrimaryKey().get().getColumns();
-
+        Collection<UniqueConstraintColumn> keyColumns = uniq.getColumns();
         List<String> parts = new ArrayList<>(keyColumns.size());
         List<Object> params = new ArrayList<>(keyColumns.size());
-        for (PrimaryKeyColumn pkc: keyColumns) {
+        for (UniqueConstraintColumn pkc: keyColumns) {
             parts.add(pkc.getName() + " = ?");
-            params.add(key.getKey().getKeyColumn(pkc.getPrimaryKeyIndex()));
+            params.add(key.getKey().get(pkc));
         }
         query.append(Joiner.on(" AND ").join(parts));
         String sql = query.toString();
@@ -174,7 +173,7 @@ public final class RowContext {
                 params.add(pkRow.get(pkColumn.getColumn()));
             });
 
-            Set<String> pkColumns = fkTable.getPrimaryKey().get().getColumnNames();
+            Set<String> pkColumns = fk.getUniqueConstraint().getColumnNames();
             queryBuilder.append(Joiner.on(", ").join(pkColumns));
             queryBuilder.append(" FROM ").append(fkTable.getName());
             queryBuilder.append(" WHERE ").append(Joiner.on(" AND ").join(expressions));
@@ -223,7 +222,7 @@ public final class RowContext {
 
     private final class RowIterator implements Iterator<Row>, Closeable {
         private final ResultSet rs;
-        private final Set<String> pkColumns;
+        private final Set<UniqueConstraintColumn> pkColumns;
         private final Table pkTable;
         private final Connection conn;
         private final Statement st;
@@ -233,7 +232,7 @@ public final class RowContext {
             this.conn = connection;
             this.st = st;
             this.rs = rs;
-            this.pkColumns = pkTable.getPrimaryKey().get().getColumnNames();
+            this.pkColumns = pkTable.getAnyUniqueConstraint().getColumns();
             this.pkTable = pkTable;
             try {
                 hasNext = rs.next();
@@ -249,17 +248,17 @@ public final class RowContext {
 
         @Override
         public Row next() {
-            PrimaryKey pk = pkTable.getPrimaryKey().get();
-            Object[] kv = new Object[pk.getColumnCount()];
+            UniqueConstraint pk = pkTable.getAnyUniqueConstraint();
+            Map<UniqueConstraintColumn, Object> kv = new HashMap<>();
 
-            pkColumns.forEach(name -> {
+            pkColumns.forEach(ucc -> {
                 try {
-                    kv[pk.getColumn(name).getPrimaryKeyIndex()] = rs.getObject(name);
+                    kv.put(ucc, rs.getObject(ucc.getName()));
                 } catch (SQLException e) {
-                    throw new QueryException("database error: ResultSet.getObject(" + name + ")", e);
+                    throw new QueryException("database error: ResultSet.getObject(" + ucc + ")", e);
                 }
             });
-            ObjectKey key = new ObjectKey(pkTable, new Key(kv));
+            ObjectKey key = new ObjectKey(pk, kv);
             try {
                 hasNext = rs.next();
             } catch (SQLException e) {

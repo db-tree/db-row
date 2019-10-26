@@ -73,13 +73,13 @@ public class RowTests {
 
         Connection conn = ds.getConnection();
         RowContext ctx = new RowContext(catalog, oracle, conn, runner);
-        ObjectKeyBuilder builder = new ObjectKeyBuilder(tableA);
+        ObjectKeyBuilder builder = new ObjectKeyBuilder(tableA.getAnyUniqueConstraint());
         builder.set("pk_a_1", 100);
         builder.set("pk_a_2", 200);
         Row aRow = new Row(ctx, builder.build());
         assertThat(aRow.get(a3), equalTo("100_200"));
 
-        ForeignKey foreignKey = Iterables.getOnlyElement(tableB.getForeignKeys().values());
+        ForeignKey foreignKey = Iterables.getOnlyElement(tableB.getForeignKeys());
         assertThat(aRow.backwardReferencesCount(), equalTo(Collections.singletonMap(foreignKey, 3)));
 
         List<Row> refs = Lists.newArrayList(aRow.backwardReference(foreignKey));

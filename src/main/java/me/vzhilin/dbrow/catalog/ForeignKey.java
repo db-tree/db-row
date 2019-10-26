@@ -10,14 +10,13 @@ import java.util.function.BiConsumer;
 public final class ForeignKey {
     private final String fkName;
     private final Table table;
-    private final Table toTable;
-    private final BiMap<PrimaryKeyColumn, ForeignKeyColumn> columnMapping;
+    private final UniqueConstraint uniqueConstraint;
+    private BiMap<UniqueConstraintColumn, ForeignKeyColumn> fkMapping;
 
-    public ForeignKey(String fkName, Table table, Table toTable, BiMap<PrimaryKeyColumn, ForeignKeyColumn> columnMapping) {
+    public ForeignKey(String fkName, Table table, UniqueConstraint unique) {
         this.fkName = fkName;
         this.table = table;
-        this.toTable = toTable;
-        this.columnMapping = columnMapping;
+        this.uniqueConstraint = unique;
     }
 
     public String getFkName() {
@@ -28,15 +27,19 @@ public final class ForeignKey {
         return table;
     }
 
-    public Table getPkTable() {
-        return toTable;
+    public UniqueConstraint getUniqueConstraint() {
+        return uniqueConstraint;
+    }
+
+    public BiMap<UniqueConstraintColumn, ForeignKeyColumn> getFkMapping() {
+        return fkMapping; // TODO unmodifiable
     }
 
     public String getFkAsString() {
         List<String> columns = new ArrayList<>();
-        columnMapping.forEach(new BiConsumer<PrimaryKeyColumn, ForeignKeyColumn>() {
+        fkMapping.forEach(new BiConsumer<UniqueConstraintColumn, ForeignKeyColumn>() {
             @Override
-            public void accept(PrimaryKeyColumn primaryKeyColumn, ForeignKeyColumn foreignKeyColumn) {
+            public void accept(UniqueConstraintColumn primaryKeyColumn, ForeignKeyColumn foreignKeyColumn) {
                 columns.add(foreignKeyColumn.getColumn().getName());
             }
         });
@@ -46,12 +49,12 @@ public final class ForeignKey {
     /**
      * @return pkColumn -&gt; fkColumn
      */
-    public BiMap<PrimaryKeyColumn, ForeignKeyColumn> getColumnMapping() {
-        return columnMapping;
+    public BiMap<UniqueConstraintColumn, ForeignKeyColumn> getColumnMapping() {
+        return fkMapping;
     }
 
     public int size() {
-        return columnMapping.size();
+        return fkMapping.size();
     }
 
     @Override
@@ -60,5 +63,9 @@ public final class ForeignKey {
                 "fkName='" + fkName + '\'' +
                 ", table=" + table +
                 '}';
+    }
+
+    public void setMapping(BiMap<UniqueConstraintColumn, ForeignKeyColumn> fkMapping) {
+        this.fkMapping = fkMapping;
     }
 }

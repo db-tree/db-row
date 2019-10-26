@@ -4,20 +4,20 @@ import com.google.common.base.Joiner;
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
 import me.vzhilin.dbrow.adapter.ValueConverter;
 import me.vzhilin.dbrow.catalog.CatalogFilter;
-import me.vzhilin.dbrow.catalog.PrimaryKey;
-import me.vzhilin.dbrow.catalog.PrimaryKeyColumn;
 import me.vzhilin.dbrow.catalog.Table;
+import me.vzhilin.dbrow.catalog.UniqueConstraint;
+import me.vzhilin.dbrow.catalog.UniqueConstraintColumn;
 import me.vzhilin.dbrow.catalog.filter.AcceptAny;
-import me.vzhilin.dbrow.db.*;
+import me.vzhilin.dbrow.db.ObjectKey;
+import me.vzhilin.dbrow.db.QueryException;
+import me.vzhilin.dbrow.db.Row;
+import me.vzhilin.dbrow.db.RowContext;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public final class SearchInTable {
     private final RowContext ctx;
@@ -73,8 +73,8 @@ public final class SearchInTable {
             List<Object> parameters = new ArrayList<>();
 
             String qualifiedTableName = ctx.getAdapter().qualifiedTableName(table);
-            PrimaryKey pk = table.getPrimaryKey().get();
-            for (PrimaryKeyColumn pkc: pk.getColumns()) {
+            UniqueConstraint pk = table.getAnyUniqueConstraint();
+            for (UniqueConstraintColumn pkc: pk.getColumns()) {
                 pkColumns.add(pkc.getName());
             }
             String joinedPks = Joiner.on(',').join(pkColumns);
@@ -120,19 +120,17 @@ public final class SearchInTable {
 
                     @Override
                     public Row next() {
-                        Object[] keyColumns = new Object[pk.getColumnCount()];
+                        Map<UniqueConstraintColumn, Object> key = new HashMap<>();
                         pk.getColumns().forEach(pkc -> {
-                            String name = pkc.getName();
-
                             try {
-                                keyColumns[pkc.getPrimaryKeyIndex()] = rs.getObject(name);
+                                key.put(pkc, rs.getObject(pkc.getName()));
                             } catch (SQLException ex) {
-                                throw new QueryException("database error: ResultSet.getObject(" + name + ")", ex);
+                                throw new QueryException("database error: ResultSet.getObject(" + pkc.getName() + ")", ex);
                             }
                         });
 
-                        Key key = new Key(keyColumns);
-                        ObjectKey objectKey = new ObjectKey(table, key);
+
+                        ObjectKey objectKey = new ObjectKey(pk, key);
                         Row r = new Row(ctx, objectKey);
                         try {
                             hasNext = rs.next();
