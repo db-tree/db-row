@@ -1,11 +1,11 @@
 package me.vzhilin.dbrow.db;
 
-import me.vzhilin.dbrow.adapter.DatabaseAdapter;
 import me.vzhilin.dbrow.adapter.oracle.OracleDatabaseAdapter;
 import me.vzhilin.dbrow.catalog.Catalog;
-import me.vzhilin.dbrow.catalog.CatalogLoader;
 import me.vzhilin.dbrow.catalog.Table;
 import me.vzhilin.dbrow.catalog.filter.AcceptSchema;
+import me.vzhilin.dbrow.catalog.loader.CatalogLoader;
+import me.vzhilin.dbrow.catalog.loader.CatalogLoaderFactory;
 import me.vzhilin.dbrow.search.CountOccurences;
 import me.vzhilin.dbrow.search.SearchInTable;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -76,8 +76,6 @@ public class SearchTests {
             "b BLOB " +
         ")");
 
-        DatabaseAdapter oracle = new OracleDatabaseAdapter();
-
         runner.update("INSERT INTO A(id, n1) VALUES (1, 100)");
         runner.update("INSERT INTO A(id, n1) VALUES (2, 200)");
         runner.update("INSERT INTO A(id, n1) VALUES (3, 300)");
@@ -86,9 +84,11 @@ public class SearchTests {
         runner.update("INSERT INTO B(id, n1) VALUES (2, 200)");
         runner.update("INSERT INTO B(id, n1) VALUES (3, 400)");
 
-        Catalog catalog = new CatalogLoader(oracle).load(ds, new AcceptSchema("TEST"));
+        CatalogLoaderFactory factory = new CatalogLoaderFactory();
+        CatalogLoader loader = factory.getLoader(ds);
+        Catalog catalog = loader.load(ds, new AcceptSchema("TEST"));
         Connection conn = ds.getConnection();
-        RowContext ctx = new RowContext(catalog, oracle, conn, runner);
+        RowContext ctx = new RowContext(catalog, new OracleDatabaseAdapter(), conn, runner);
 
         Table tableA = catalog.getSchema("TEST").getTable("A");
         Table tableB = catalog.getSchema("TEST").getTable("B");

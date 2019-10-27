@@ -3,7 +3,6 @@ package me.vzhilin.dbrow.catalog;
 import me.vzhilin.dbrow.util.BiMap;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public final class Table {
     private final String name;
@@ -87,9 +86,11 @@ public final class Table {
     }
 
     public UniqueConstraint addUniqueConstraint(String constraintName, String... columns) {
-        Set<UniqueConstraintColumn> ucc = Arrays.stream(columns).map(name -> {
-            return new UniqueConstraintColumn(getColumn(name)); // TODO check not null
-        }).collect(Collectors.toSet());
+        int pos = 0;
+        Set<UniqueConstraintColumn> ucc = new LinkedHashSet<>();
+        for (String column: columns) {
+            ucc.add(new UniqueConstraintColumn(getColumn(column), pos++));
+        }
         UniqueConstraint cons = new UniqueConstraint(this, ucc, constraintName);
         uniqueConstraints.add(cons);
         return cons;
@@ -101,6 +102,18 @@ public final class Table {
 
     public Set<UniqueConstraint> getUniqueConstraints() {
         return Collections.unmodifiableSet(uniqueConstraints);
+    }
+
+    public UniqueConstraint getAnyUniqueConstraint() {
+        return uniqueConstraints.iterator().next();
+    }
+
+    public UniqueConstraint getUniqueConstraint(String ucName) {
+        return uniqueConstraints
+            .stream()
+            .filter(uc -> ucName.equals(uc.getName()))
+            .findFirst()
+            .get();
     }
 
     @Override
@@ -120,9 +133,5 @@ public final class Table {
     @Override
     public int hashCode() {
         return Objects.hash(name, schema);
-    }
-
-    public UniqueConstraint getAnyUniqueConstraint() {
-        return uniqueConstraints.iterator().next();
     }
 }

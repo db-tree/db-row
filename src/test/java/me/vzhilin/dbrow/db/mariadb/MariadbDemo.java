@@ -3,8 +3,8 @@ package me.vzhilin.dbrow.db.mariadb;
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
 import me.vzhilin.dbrow.adapter.mariadb.MariadbDatabaseAdapter;
 import me.vzhilin.dbrow.catalog.Catalog;
-import me.vzhilin.dbrow.catalog.CatalogLoader;
 import me.vzhilin.dbrow.catalog.filter.AcceptSchema;
+import me.vzhilin.dbrow.catalog.loader.CatalogLoaderFactory;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 
@@ -26,7 +26,7 @@ public class MariadbDemo {
 
         DatabaseAdapter mariaDb = new MariadbDatabaseAdapter();
         Connection connection = ds.getConnection();
-        Catalog catalog = new CatalogLoader(mariaDb).load(ds, new AcceptSchema(mariaDb.defaultSchema(connection)));
+        Catalog catalog = new CatalogLoaderFactory().getLoader(ds).load(ds, new AcceptSchema(mariaDb.defaultSchema(connection)));
         connection.close();
 
         System.err.println(catalog);

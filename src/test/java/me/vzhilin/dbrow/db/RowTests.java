@@ -4,6 +4,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import me.vzhilin.dbrow.adapter.oracle.OracleDatabaseAdapter;
 import me.vzhilin.dbrow.catalog.*;
+import me.vzhilin.dbrow.catalog.loader.CatalogLoaderFactory;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.junit.jupiter.api.AfterAll;
@@ -60,7 +61,7 @@ public class RowTests {
         runner.update("INSERT INTO B(pk_b, fk_b_1, fk_b_2) VALUES (302, 100, 200)");
 
         OracleDatabaseAdapter oracle = new OracleDatabaseAdapter();
-        Catalog catalog = new CatalogLoader(oracle).load(ds, null);
+        Catalog catalog = new CatalogLoaderFactory().getLoader(ds).load(ds, null);
         Schema schema = catalog.getOnlySchema();
         Table tableA = schema.getTable("A");
         Table tableB = schema.getTable("B");

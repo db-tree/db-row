@@ -44,4 +44,8 @@ public final class UniqueConstraint {
     public Set<String> getColumnNames() {
         return columns.stream().map(UniqueConstraintColumn::getName).collect(Collectors.toSet());
     }
+
+    public String getName() {
+        return constraintName;
+    }
 }

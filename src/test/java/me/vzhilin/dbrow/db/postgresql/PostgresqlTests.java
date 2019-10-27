@@ -2,8 +2,8 @@ package me.vzhilin.dbrow.db.postgresql;
 
 import me.vzhilin.dbrow.adapter.postgres.PostgresqlAdapter;
 import me.vzhilin.dbrow.catalog.Catalog;
-import me.vzhilin.dbrow.catalog.CatalogLoader;
 import me.vzhilin.dbrow.catalog.Table;
+import me.vzhilin.dbrow.catalog.loader.CatalogLoaderFactory;
 import me.vzhilin.dbrow.db.Row;
 import me.vzhilin.dbrow.db.RowContext;
 import me.vzhilin.dbrow.search.CountOccurences;
@@ -76,7 +76,7 @@ public class PostgresqlTests {
         RUNNER.update(format("CREATE TABLE test_01 (id serial PRIMARY KEY, v %s)", type));
         RUNNER.update("INSERT INTO test_01(v) values(?)", value);
 
-        Catalog catalog = new CatalogLoader(ADAPTER).load(DS);
+        Catalog catalog = new CatalogLoaderFactory().getLoader(DS).load(DS);
         try (Connection connection = DS.getConnection()) {
             RowContext ctx = new RowContext(catalog, ADAPTER, connection, RUNNER);
             Map<Table, Long> count = new CountOccurences(ctx, textValue).count();
