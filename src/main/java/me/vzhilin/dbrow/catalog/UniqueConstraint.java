@@ -29,6 +29,10 @@ public final class UniqueConstraint {
         return Collections.unmodifiableSet(columns);
     }
 
+    public void addForeignKey(ForeignKey fk) {
+        foreignKeys.add(fk);
+    }
+
     public Set<ForeignKey> getForeignKeys() {
         return Collections.unmodifiableSet(foreignKeys);
     }

@@ -9,6 +9,10 @@ import java.util.Map;
 public class CatalogLoaderFactory {
     private Map<String, CatalogLoader> registeredLoaders = new HashMap<>();
 
+    public CatalogLoaderFactory() {
+        registeredLoaders.put("Oracle JDBC driver", new OracleCatalogLoader());
+    }
+
     public CatalogLoader getLoader(DataSource ds) throws SQLException {
         try (Connection conn = ds.getConnection()) {
             String driverName = getDriverName(conn);

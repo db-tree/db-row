@@ -14,12 +14,58 @@ import java.util.*;
 
 public final class OracleCatalogLoader extends MetadataCatalogLoader {
     @Override
+    protected void loadUniqueConstraints(QueryRunner runner, Connection conn, Catalog catalog, DatabaseMetaData metadata) throws SQLException {
+        // TODO set schema
+        List<Map<String, Object>> rs = runner.query(conn, "select\n" +
+                "    uc.owner,\n" +
+                "    uc.constraint_name, \n" +
+                "    uc.constraint_type, \n" +
+                "    uc.table_name, \n" +
+                "    ucc.column_name, \n" +
+                "    ucc.position \n" +
+                "from user_constraints uc \n" +
+                "join USER_CONS_COLUMNS ucc on uc.constraint_name = ucc.constraint_name\n" +
+                "where uc.constraint_type in ('U', 'P')", new MapListHandler());
+
+
+        Map<String, Table> uniqueConstraintTable = new HashMap<>();
+        Multimap<String, UniqueConstraintColumn> uniqueConstraintColumns = HashMultimap.create();
+        for (Map<String, Object> m: rs) {
+            String schema = (String) m.get("OWNER");
+            String constraintName = (String) m.get("CONSTRAINT_NAME");
+            String constraintType = (String) m.get("CONSTRAINT_TYPE");
+            String tableName = (String) m.get("TABLE_NAME");
+            String columnName = (String) m.get("COLUMN_NAME");
+            int position = ((Number) m.get("POSITION")).intValue();
+
+            Schema s = catalog.getSchema(schema);
+            Table t = s.getTable(tableName);
+            Column c = t.getColumn(columnName);
+
+            UniqueConstraintColumn ucc = new UniqueConstraintColumn(c, position);
+            uniqueConstraintColumns.put(constraintName, ucc);
+
+            uniqueConstraintTable.put(constraintName, t);
+        }
+        uniqueConstraintColumns.asMap().forEach((consName, uccs) -> {
+            List<UniqueConstraintColumn> arr = new ArrayList<>(uccs);
+            String[] columns = arr.stream()
+                    .sorted(Comparator.comparingInt(UniqueConstraintColumn::getPosition))
+                    .map(UniqueConstraintColumn::getName)
+                    .toArray(String[]::new);
+
+            Table table = uniqueConstraintTable.get(consName);
+            table.addUniqueConstraint(consName, columns);
+        });
+    }
+
+    @Override
     protected void loadForeignConstraints(QueryRunner runner, Connection conn, Catalog catalog) throws SQLException {
         Map<String, Table> uniqConstraintToTableName = new HashMap<>();
         String uniqConstraintQuery =
-            "select owner, table_name, constraint_name\n" +
-            "from user_constraints uc \n" +
-            "where constraint_type in ('U', 'P')";
+                "select owner, table_name, constraint_name\n" +
+                        "from user_constraints uc \n" +
+                        "where constraint_type in ('U', 'P')";
 
         for (Map<String, Object> m: runner.query(conn, uniqConstraintQuery, new MapListHandler())) {
             String schemaName = (String) m.get("OWNER");
@@ -86,54 +132,8 @@ public final class OracleCatalogLoader extends MetadataCatalogLoader {
             Table uniqTable = uniqConstraintToTableName.get(uniqueConstraintName);
             UniqueConstraint uc = uniqTable.getUniqueConstraint(uniqueConstraintName);
 
-            fkTable.addForeignKey(fkConstraintName, uc, fkNameToColumnMapping.get(fkConstraintName));
+            ForeignKey foreignKey = fkTable.addForeignKey(fkConstraintName, uc, fkNameToColumnMapping.get(fkConstraintName));
+            uc.addForeignKey(foreignKey);
         }
     }
-
-    @Override
-    protected void loadUniqueConstraints(QueryRunner runner, Connection conn, Catalog catalog, DatabaseMetaData metadata) throws SQLException {
-        // TODO set schema
-        List<Map<String, Object>> rs = runner.query(conn, "select\n" +
-                "    uc.owner,\n" +
-                "    uc.constraint_name, \n" +
-                "    uc.constraint_type, \n" +
-                "    uc.table_name, \n" +
-                "    ucc.column_name, \n" +
-                "    ucc.position \n" +
-                "from user_constraints uc \n" +
-                "join USER_CONS_COLUMNS ucc on uc.constraint_name = ucc.constraint_name\n" +
-                "where uc.constraint_type in ('U', 'P')", new MapListHandler());
-
-
-        Map<String, Table> uniqueConstraintTable = new HashMap<>();
-        Multimap<String, UniqueConstraintColumn> uniqueConstraintColumns = HashMultimap.create();
-        for (Map<String, Object> m: rs) {
-            String schema = (String) m.get("OWNER");
-            String constraintName = (String) m.get("CONSTRAINT_NAME");
-            String constraintType = (String) m.get("CONSTRAINT_TYPE");
-            String tableName = (String) m.get("TABLE_NAME");
-            String columnName = (String) m.get("COLUMN_NAME");
-            int position = ((Number) m.get("POSITION")).intValue();
-
-            Schema s = catalog.getSchema(schema);
-            Table t = s.getTable(tableName);
-            Column c = t.getColumn(columnName);
-
-            UniqueConstraintColumn ucc = new UniqueConstraintColumn(c, position);
-            uniqueConstraintColumns.put(constraintName, ucc);
-
-            uniqueConstraintTable.put(constraintName, t);
-        }
-        uniqueConstraintColumns.asMap().forEach((consName, uccs) -> {
-            List<UniqueConstraintColumn> arr = new ArrayList<>(uccs);
-            String[] columns = arr.stream()
-                    .sorted(Comparator.comparingInt(UniqueConstraintColumn::getPosition))
-                    .map(UniqueConstraintColumn::getName)
-                    .toArray(String[]::new);
-
-            Table table = uniqueConstraintTable.get(consName);
-            table.addUniqueConstraint(consName, columns);
-        });
-    }
-
 }

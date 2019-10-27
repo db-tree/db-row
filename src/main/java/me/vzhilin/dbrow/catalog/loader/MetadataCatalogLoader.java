@@ -48,15 +48,13 @@ public abstract class MetadataCatalogLoader implements CatalogLoader {
         catalog.forEachTable(new Consumer<Table>() {
             @Override
             public void accept(Table table) {
-                try {
-                    ResultSet columns = metadata.getColumns(null, table.getSchemaName(), table.getName(), null);
+                try (ResultSet columns = metadata.getColumns(null, table.getSchemaName(), table.getName(), null)){
                     while (columns.next()) {
                         String columnName = columns.getString("COLUMN_NAME");
                         String columnType = columns.getString("TYPE_NAME");
                         int columnIndex = columns.getInt("ORDINAL_POSITION") - 1;
                         table.addColumn(columnName, columnType, columnIndex);
                     }
-                    columns.close();
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }

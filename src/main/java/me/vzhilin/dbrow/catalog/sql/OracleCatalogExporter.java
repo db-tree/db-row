@@ -6,18 +6,21 @@ import me.vzhilin.dbrow.catalog.ForeignKey;
 import me.vzhilin.dbrow.catalog.Table;
 import me.vzhilin.dbrow.catalog.UniqueConstraint;
 
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class OracleCatalogExporter {
-    public void export(Catalog cat, PrintStream out) {
+    public void export(Catalog cat, PrintWriter out) {
         exportTables(cat, out);
         exportForeignKeys(cat, out);
     }
 
-    private void exportForeignKeys(Catalog cat, PrintStream out) {
+    private void exportForeignKeys(Catalog cat, PrintWriter out) {
+        List<String> constraints = new ArrayList<>();
+
         cat.forEachTable(new Consumer<Table>() {
             @Override
             public void accept(Table table) {
@@ -32,41 +35,57 @@ public class OracleCatalogExporter {
                     String ucColumns = Joiner.on(',').join(ucColumnNames);
 
                     UniqueConstraint uc = fk.getUniqueConstraint();
-                    StringBuilder sb = new StringBuilder();
                     Table ucTable = uc.getTable();
-                    sb.append(String.format(
+                    constraints.add(String.format(
                         "ALTER TABLE \"%s\".\"%s\" ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES \"%s\".\"%s\" (%s);",
                         table.getSchemaName(), table.getName(), fk.getFkName(), fkColumns,
                         ucTable.getSchemaName(), ucTable.getName(), ucColumns
                     ));
-                    out.println(sb.toString());
                 }
             }
         });
+
+        Collections.sort(constraints);
+        out.print(Joiner.on('\n').join(constraints));
     }
 
-    private void exportTables(Catalog cat, PrintStream out) {
+    private void exportTables(Catalog cat, PrintWriter out) {
+        List<String> tables = new ArrayList<>();
+        List<String> constraints = new ArrayList<>();
+
+
         cat.forEachTable(new Consumer<Table>() {
             @Override
             public void accept(Table table) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(String.format("CREATE TABLE \"%s\".\"%s\" (\n", table.getSchemaName(), table.getName()));
-
-                List<String> parts = new ArrayList<>(table.getColumnCount());
+                List<String> parts = new ArrayList<>();
                 table.getColumns().forEach((name, column) -> parts.add("\t" + name + " " + column.getDataType()));
 
                 table.getUniqueConstraints().forEach(new Consumer<>() {
                     @Override
                     public void accept(UniqueConstraint uc) {
                         String columns = Joiner.on(',').join(uc.getColumnNames());
-                        parts.add(String.format("\tCONSTRAINT %s UNIQUE (%s)", uc.getName(), columns));
+                        constraints.add(String.format("ALTER TABLE \"%s\".\"%s\" ADD CONSTRAINT %s UNIQUE (%s);",
+                            table.getSchemaName(), table.getName(),
+                            uc.getName(), columns));
                     }
                 });
 
                 sb.append(Joiner.on(",\n").join(parts));
                 sb.append("\n);");
-                out.println(sb);
+                tables.add(sb.toString());
             }
         });
+
+        Collections.sort(tables);
+        Collections.sort(constraints);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(Joiner.on('\n').join(tables));
+        sb.append('\n');
+        sb.append(Joiner.on('\n').join(constraints));
+
+        out.println(sb);
     }
 }
