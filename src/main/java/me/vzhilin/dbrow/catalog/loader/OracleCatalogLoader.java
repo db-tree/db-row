@@ -55,7 +55,10 @@ public final class OracleCatalogLoader extends MetadataCatalogLoader {
                     .toArray(String[]::new);
 
             Table table = uniqueConstraintTable.get(consName);
-            table.addUniqueConstraint(consName, columns);
+            UniqueConstraint uniq = table.addUniqueConstraint(consName, columns);
+            for (String column : columns) {
+                table.getColumn(column).addUniqueConstraint(uniq);
+            }
         });
     }
 
@@ -108,9 +111,11 @@ public final class OracleCatalogLoader extends MetadataCatalogLoader {
             Table fkT = catalog.getSchema(fkOwner).getTable(fkTable);
             Table ucT = uniqConstraintToTableName.get(ucConstraint);
 
+            UniqueConstraint ucc = ucT.getUniqueConstraint(ucConstraint);
+
             fkNameToColumnMapping
                 .computeIfAbsent(fkConstraint, s -> new BiMap<>())
-                .put(new UniqueConstraintColumn(ucT.getColumn(ucColumn), ucPos), fkT.getColumn(fkColumn));
+                .put(ucc.getColumn(ucColumn), fkT.getColumn(fkColumn));
         }
 
         String query =
@@ -132,8 +137,10 @@ public final class OracleCatalogLoader extends MetadataCatalogLoader {
             Table uniqTable = uniqConstraintToTableName.get(uniqueConstraintName);
             UniqueConstraint uc = uniqTable.getUniqueConstraint(uniqueConstraintName);
 
-            ForeignKey foreignKey = fkTable.addForeignKey(fkConstraintName, uc, fkNameToColumnMapping.get(fkConstraintName));
+            BiMap<UniqueConstraintColumn, Column> mapping = fkNameToColumnMapping.get(fkConstraintName);
+            ForeignKey foreignKey = fkTable.addForeignKey(fkConstraintName, uc, mapping);
             uc.addForeignKey(foreignKey);
+            mapping.forEach((ucc, column) -> column.addForeignKey(foreignKey));
         }
     }
 }

@@ -2,7 +2,6 @@ package me.vzhilin.dbrow.db.catalog;
 
 import me.vzhilin.dbrow.catalog.*;
 import me.vzhilin.dbrow.catalog.filter.AcceptSchema;
-import me.vzhilin.dbrow.catalog.loader.CatalogLoader;
 import me.vzhilin.dbrow.catalog.loader.CatalogLoaderFactory;
 import me.vzhilin.dbrow.catalog.sql.OracleCatalogExporter;
 import me.vzhilin.dbrow.util.BiMap;
@@ -72,8 +71,7 @@ public class CatalogTest {
     }
 
     private Catalog loadCatalog() throws SQLException {
-        CatalogLoader loader = new CatalogLoaderFactory().getLoader(DS);
-        return loader.load(DS, new AcceptSchema("TEST"));
+        return  new CatalogLoaderFactory().getLoader(DS).load(DS, new AcceptSchema("TEST"));
     }
 
     private void createTables(Catalog sample) throws SQLException {

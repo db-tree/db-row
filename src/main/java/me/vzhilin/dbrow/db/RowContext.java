@@ -173,7 +173,7 @@ public final class RowContext {
                 params.add(pkRow.get(pkColumn.getColumn()));
             });
 
-            Set<String> pkColumns = fk.getUniqueConstraint().getColumnNames();
+            Set<String> pkColumns = fk.getTable().getAnyUniqueConstraint().getColumnNames();
             queryBuilder.append(Joiner.on(", ").join(pkColumns));
             queryBuilder.append(" FROM ").append(fkTable.getName());
             queryBuilder.append(" WHERE ").append(Joiner.on(" AND ").join(expressions));
@@ -208,7 +208,7 @@ public final class RowContext {
                 throw new QueryException("unable to execute query", query, ex);
             }
 
-            return new RowIterator(fkTable, rs, connection, st);
+            return new RowIterator(fkTable, rs, connection, st); // FIXME ANY cons
         }
     }
 

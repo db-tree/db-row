@@ -9,7 +9,7 @@ public final class Row {
     private final RowContext ctx;
     private final Map<Column, Object> values = new LinkedHashMap<>();
     private final Map<ForeignKey, Row> forwardReferences = new LinkedHashMap<>();
-    private final Map<ForeignKey, Number> backwardReferencesCount = new LinkedHashMap<>();
+    private final Map<UniqueConstraint, Map<ForeignKey, Number>> backwardReferencesCount = new LinkedHashMap<>();
     private boolean loaded;
     private boolean backwardReferencesLoaded;
 
@@ -42,6 +42,7 @@ public final class Row {
     }
 
     public Map<UniqueConstraintColumn, Object> getKeyValues() {
+        ensureLoaded();
         HashMap<UniqueConstraintColumn, Object> rs = new LinkedHashMap<>();
         UniqueConstraint pk = key.getCons();
         pk.getColumns().forEach(pkc -> rs.put(pkc, values.get(pkc.getColumn())));
@@ -54,10 +55,17 @@ public final class Row {
         return Collections.unmodifiableMap(forwardReferences);
     }
 
-    public Map<ForeignKey, Number> backwardReferencesCount() {
+
+    public Map<UniqueConstraint, Map<ForeignKey, Number>> backwardReferencesCount() {
         if (!backwardReferencesLoaded) {
-            Set<ForeignKey> foreignKeys = getForeignKeys();
-            foreignKeys.forEach(fk -> backwardReferencesCount.put(fk, ctx.backReferencesCount(this, fk)));
+            for (UniqueConstraint ucc: getTable().getUniqueConstraints()) {
+                Map<ForeignKey, Number> count = new LinkedHashMap<>();
+                for (ForeignKey fk: ucc.getForeignKeys()) {
+                    count.put(fk, ctx.backReferencesCount(this, fk));
+                }
+                backwardReferencesCount.put(ucc, count);
+            }
+
             backwardReferencesLoaded = true;
         }
 

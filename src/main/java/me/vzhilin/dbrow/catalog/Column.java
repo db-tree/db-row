@@ -1,7 +1,7 @@
 package me.vzhilin.dbrow.catalog;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -10,7 +10,8 @@ public final class Column {
     private final String dataType;
     private final Table table;
     private final int index;
-    private final Set<ForeignKey> foreignKeys = new HashSet<>();
+    private final Set<UniqueConstraint> uniqueConstraints = new LinkedHashSet<>();
+    private final Set<ForeignKey> foreignKeys = new LinkedHashSet<>();
 
     public Column(Table table, String name, String dataType, int index) {
         this.table = table;
@@ -37,6 +38,14 @@ public final class Column {
 
     public void addForeignKey(ForeignKey fk) {
         foreignKeys.add(fk);
+    }
+
+    public void addUniqueConstraint(UniqueConstraint uc) {
+        uniqueConstraints.add(uc);
+    }
+
+    public Set<UniqueConstraint> getUniqueConstraints() {
+        return Collections.unmodifiableSet(uniqueConstraints);
     }
 
     public Set<ForeignKey> getForeignKeys() {

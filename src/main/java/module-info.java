@@ -6,6 +6,7 @@ module dbrow {
     exports me.vzhilin.dbrow.adapter.postgres;
 
     exports me.vzhilin.dbrow.catalog;
+    exports me.vzhilin.dbrow.catalog.loader;
     exports me.vzhilin.dbrow.catalog.filter;
     exports me.vzhilin.dbrow.db;
     exports me.vzhilin.dbrow.search;

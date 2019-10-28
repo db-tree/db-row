@@ -24,9 +24,16 @@ public final class Table {
         return columns.containsKey(columnName);
     }
 
-//    public boolean hasForeignKey(String name) {
-//        return foreignKeys.containsKey(name);
-//    }
+    public ForeignKey getForeignKey(String name) {
+        return foreignKeys
+                .stream()
+                .filter(foreignKey -> name.equals(foreignKey.getFkName()))
+                .findFirst().get();
+    }
+
+    public boolean hasForeignKey(String name) {
+        return foreignKeys.stream().anyMatch(foreignKey -> name.equals(foreignKey.getFkName()));
+    }
 
     public Column addColumn(String columnName, String columnType, int columnIndex) {
         Column column = new Column(this, columnName, columnType, columnIndex);
@@ -86,7 +93,7 @@ public final class Table {
     }
 
     public UniqueConstraint addUniqueConstraint(String constraintName, String... columns) {
-        int pos = 0;
+        int pos = 1;
         Set<UniqueConstraintColumn> ucc = new LinkedHashSet<>();
         for (String column: columns) {
             ucc.add(new UniqueConstraintColumn(getColumn(column), pos++));

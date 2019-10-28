@@ -1,14 +1,14 @@
 package me.vzhilin.dbrow.catalog;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class UniqueConstraint {
     private final Table table;
     private final String constraintName;
-    private final Set<ForeignKey> foreignKeys = new HashSet<>();
+    private final Set<ForeignKey> foreignKeys = new LinkedHashSet<>();
     private final Set<UniqueConstraintColumn> columns;
 
     public UniqueConstraint(Table table, Set<UniqueConstraintColumn> columns) {
@@ -22,6 +22,7 @@ public final class UniqueConstraint {
     }
 
     public UniqueConstraintColumn getColumn(String name) {
+        // TODO NPE
         return columns.stream().filter(ucc -> name.equals(ucc.getName())).findFirst().get();
     }
 
