@@ -14,7 +14,7 @@ import java.util.*;
 
 public final class OracleCatalogLoader extends MetadataCatalogLoader {
     @Override
-    protected void loadUniqueConstraints(QueryRunner runner, Connection conn, Catalog catalog, DatabaseMetaData metadata) throws SQLException {
+    protected void loadUniqueConstraints(QueryRunner runner, Connection conn, Catalog catalog, CatalogFilter filter, DatabaseMetaData metadata) throws SQLException {
         // TODO set schema
         List<Map<String, Object>> rs = runner.query(conn, "select\n" +
                 "    uc.owner,\n" +
@@ -63,7 +63,7 @@ public final class OracleCatalogLoader extends MetadataCatalogLoader {
     }
 
     @Override
-    protected void loadForeignConstraints(QueryRunner runner, Connection conn, Catalog catalog) throws SQLException {
+    protected void loadForeignConstraints(QueryRunner runner, Connection conn, Catalog catalog, CatalogFilter filter) throws SQLException {
         Map<String, Table> uniqConstraintToTableName = new HashMap<>();
         String uniqConstraintQuery =
                 "select owner, table_name, constraint_name\n" +

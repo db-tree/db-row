@@ -36,13 +36,13 @@ public abstract class MetadataCatalogLoader implements CatalogLoader {
         loadTables(catalog, filter, metadata);
         loadColumns(catalog, metadata);
 
-        loadUniqueConstraints(runner, conn, catalog, metadata);
-        loadForeignConstraints(runner, conn, catalog);
+        loadUniqueConstraints(runner, conn, catalog, filter, metadata);
+        loadForeignConstraints(runner, conn, catalog, filter);
     }
 
-    protected abstract void loadForeignConstraints(QueryRunner runner, Connection conn, Catalog catalog) throws SQLException;
+    protected abstract void loadForeignConstraints(QueryRunner runner, Connection conn, Catalog catalog, CatalogFilter filter) throws SQLException;
 
-    protected abstract void loadUniqueConstraints(QueryRunner runner, Connection conn, Catalog catalog, DatabaseMetaData metadata) throws SQLException;
+    protected abstract void loadUniqueConstraints(QueryRunner runner, Connection conn, Catalog catalog, CatalogFilter filter, DatabaseMetaData metadata) throws SQLException;
 
     protected void loadColumns(Catalog catalog, DatabaseMetaData metadata) {
         catalog.forEachTable(new Consumer<Table>() {

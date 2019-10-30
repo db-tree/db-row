@@ -1,6 +1,7 @@
 package me.vzhilin.dbrow.catalog.sql;
 
 import com.google.common.base.Joiner;
+import me.vzhilin.dbrow.adapter.DatabaseAdapter;
 import me.vzhilin.dbrow.catalog.Catalog;
 import me.vzhilin.dbrow.catalog.ForeignKey;
 import me.vzhilin.dbrow.catalog.Table;
@@ -13,12 +14,13 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class OracleCatalogExporter {
-    public void export(Catalog cat, PrintWriter out) {
-        exportTables(cat, out);
-        exportForeignKeys(cat, out);
+    public void export(DatabaseAdapter adapter, Catalog cat, PrintWriter out) {
+        exportTables(adapter, cat, out);
+        exportForeignKeys(adapter, cat, out);
+
     }
 
-    private void exportForeignKeys(Catalog cat, PrintWriter out) {
+    private void exportForeignKeys(DatabaseAdapter adapter, Catalog cat, PrintWriter out) {
         List<String> constraints = new ArrayList<>();
 
         cat.forEachTable(new Consumer<Table>() {
@@ -36,10 +38,12 @@ public class OracleCatalogExporter {
 
                     UniqueConstraint uc = fk.getUniqueConstraint();
                     Table ucTable = uc.getTable();
+                    String t1 = adapter.qualifiedTableName(table);
+                    String t2 = adapter.qualifiedTableName(ucTable);
                     constraints.add(String.format(
-                        "ALTER TABLE \"%s\".\"%s\" ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES \"%s\".\"%s\" (%s);",
-                        table.getSchemaName(), table.getName(), fk.getFkName(), fkColumns,
-                        ucTable.getSchemaName(), ucTable.getName(), ucColumns
+                        "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s);",
+                        t1, fk.getFkName(), fkColumns,
+                        t2, ucColumns
                     ));
                 }
             }
@@ -49,7 +53,7 @@ public class OracleCatalogExporter {
         out.print(Joiner.on('\n').join(constraints));
     }
 
-    private void exportTables(Catalog cat, PrintWriter out) {
+    private void exportTables(DatabaseAdapter adapter, Catalog cat, PrintWriter out) {
         List<String> tables = new ArrayList<>();
         List<String> constraints = new ArrayList<>();
 
@@ -58,7 +62,8 @@ public class OracleCatalogExporter {
             @Override
             public void accept(Table table) {
                 StringBuilder sb = new StringBuilder();
-                sb.append(String.format("CREATE TABLE \"%s\".\"%s\" (\n", table.getSchemaName(), table.getName()));
+                String qualifiedTable = adapter.qualifiedTableName(table);
+                sb.append(String.format("CREATE TABLE %s (\n",qualifiedTable));
                 List<String> parts = new ArrayList<>();
                 table.getColumns().forEach((name, column) -> parts.add("\t" + name + " " + column.getDataType()));
 
@@ -66,9 +71,8 @@ public class OracleCatalogExporter {
                     @Override
                     public void accept(UniqueConstraint uc) {
                         String columns = Joiner.on(',').join(uc.getColumnNames());
-                        constraints.add(String.format("ALTER TABLE \"%s\".\"%s\" ADD CONSTRAINT %s UNIQUE (%s);",
-                            table.getSchemaName(), table.getName(),
-                            uc.getName(), columns));
+                        constraints.add(String.format("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s);",
+                            qualifiedTable, uc.getName(), columns));
                     }
                 });
 

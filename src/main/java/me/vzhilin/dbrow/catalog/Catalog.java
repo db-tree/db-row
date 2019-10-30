@@ -21,7 +21,7 @@ public final class Catalog {
     }
 
     public Table getTable(String schemaName, String tableName) {
-        return schemas.get(schemaName).getTable(tableName);
+        return schemas.computeIfAbsent(schemaName, Schema::new).getTable(tableName);
     }
 
     public void forEachTable(Consumer<Table> consumer) {

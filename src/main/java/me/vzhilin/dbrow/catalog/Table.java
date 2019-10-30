@@ -28,7 +28,7 @@ public final class Table {
         return foreignKeys
                 .stream()
                 .filter(foreignKey -> name.equals(foreignKey.getFkName()))
-                .findFirst().get();
+                .findFirst().orElse(null);
     }
 
     public boolean hasForeignKey(String name) {
@@ -140,5 +140,14 @@ public final class Table {
     @Override
     public int hashCode() {
         return Objects.hash(name, schema);
+    }
+
+    public UniqueConstraint findConstraint(Set<String> uniqueColumns) {
+        for (UniqueConstraint uc: uniqueConstraints) {
+            if (uniqueColumns.equals(uc.getColumnNames())) {
+                return uc;
+            }
+        }
+        return null;
     }
 }

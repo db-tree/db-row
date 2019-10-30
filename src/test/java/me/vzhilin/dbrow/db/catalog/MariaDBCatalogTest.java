@@ -1,6 +1,6 @@
 package me.vzhilin.dbrow.db.catalog;
 
-import me.vzhilin.dbrow.adapter.oracle.OracleDatabaseAdapter;
+import me.vzhilin.dbrow.adapter.mariadb.MariadbDatabaseAdapter;
 import me.vzhilin.dbrow.catalog.*;
 import me.vzhilin.dbrow.catalog.filter.AcceptSchema;
 import me.vzhilin.dbrow.catalog.loader.CatalogLoaderFactory;
@@ -8,7 +8,6 @@ import me.vzhilin.dbrow.catalog.sql.OracleCatalogExporter;
 import me.vzhilin.dbrow.util.BiMap;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.handlers.ArrayHandler;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,7 @@ import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CatalogTest {
+public class MariaDBCatalogTest {
     private static DataSource DS;
 
     @BeforeAll
@@ -30,10 +29,10 @@ public class CatalogTest {
         Locale.setDefault(Locale.US);
 
         BasicDataSource ds = new BasicDataSource();
-        ds.setDriverClassName("oracle.jdbc.OracleDriver");
+        ds.setDriverClassName("org.mariadb.jdbc.Driver");
         ds.setUsername("test");
         ds.setPassword("test");
-        ds.setUrl("jdbc:oracle:thin:@localhost:1521:XE");
+        ds.setUrl("jdbc:mariadb://localhost:3306/test");
 
         DS = ds;
 
@@ -43,10 +42,8 @@ public class CatalogTest {
     @AfterAll
     public static void cleanup() throws SQLException {
         QueryRunner runner = new QueryRunner(DS);
-        for (Object m: runner.query("SELECT TABLE_NAME FROM USER_TABLES", new ArrayHandler())) {
-            String tableName = (String) m;
-            runner.update("DROP TABLE " + tableName + " CASCADE CONSTRAINTS");
-        }
+        runner.update("DROP TABLE IF EXISTS B");
+        runner.update("DROP TABLE IF EXISTS A");
     }
 
     @Test
@@ -67,17 +64,17 @@ public class CatalogTest {
     private String exportSql(Catalog sample) {
         OracleCatalogExporter exporter = new OracleCatalogExporter();
         StringWriter sw = new StringWriter();
-        exporter.export(new OracleDatabaseAdapter(), sample, new PrintWriter(sw));
+        exporter.export(new MariadbDatabaseAdapter(), sample, new PrintWriter(sw));
         return sw.toString();
     }
 
     private Catalog loadCatalog() throws SQLException {
-        return  new CatalogLoaderFactory().getLoader(DS).load(DS, new AcceptSchema("TEST"));
+        return  new CatalogLoaderFactory().getLoader(DS).load(DS, new AcceptSchema("test"));
     }
 
     private void createTables(Catalog sample) throws SQLException {
         StringWriter sw = new StringWriter();
-        new OracleCatalogExporter().export(new OracleDatabaseAdapter(), sample, new PrintWriter(sw));
+        new OracleCatalogExporter().export(new MariadbDatabaseAdapter(), sample, new PrintWriter(sw));
         String commands = sw.toString();
         executeCommands(commands);
     }
@@ -99,17 +96,17 @@ public class CatalogTest {
         Catalog sample = new Catalog();
         Schema schema = sample.addSchema("TEST");
         Table aTable = schema.addTable("A");
-        aTable.addColumn("A", "NUMBER", 0);
-        aTable.addColumn("B", "NUMBER", 1);
-        aTable.addColumn("C", "NUMBER", 2);
+        aTable.addColumn("A", "DECIMAL", 0);
+        aTable.addColumn("B", "DECIMAL", 1);
+        aTable.addColumn("C", "DECIMAL", 2);
 
         UniqueConstraint ucA = aTable.addUniqueConstraint("UC_TEST_A", new String[]{"A"});
         UniqueConstraint ucBC = aTable.addUniqueConstraint("UC_TEST_BC", new String[]{"B", "C"});
 
         Table bTable = schema.addTable("B");
-        bTable.addColumn("D", "NUMBER", 0);
-        bTable.addColumn("E", "NUMBER", 1);
-        bTable.addColumn("F", "NUMBER", 2);
+        bTable.addColumn("D", "DECIMAL", 0);
+        bTable.addColumn("E", "DECIMAL", 1);
+        bTable.addColumn("F", "DECIMAL", 2);
 
         BiMap<UniqueConstraintColumn, Column> fkDMapping = new BiMap<>();
         fkDMapping.put(ucA.getColumn("A"), bTable.getColumn("D"));

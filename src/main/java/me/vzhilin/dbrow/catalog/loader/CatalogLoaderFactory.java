@@ -11,6 +11,7 @@ public class CatalogLoaderFactory {
 
     public CatalogLoaderFactory() {
         registeredLoaders.put("Oracle JDBC driver", new OracleCatalogLoader());
+        registeredLoaders.put("MariaDB Connector/J", new MariaDBCatalogLoader());
     }
 
     public CatalogLoader getLoader(DataSource ds) throws SQLException {
