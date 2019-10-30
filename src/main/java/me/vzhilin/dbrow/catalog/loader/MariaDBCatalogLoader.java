@@ -51,7 +51,8 @@ public final class MariaDBCatalogLoader extends MetadataCatalogLoader {
                 BiMap<UniqueConstraintColumn, Column> m = new BiMap<UniqueConstraintColumn, Column>();
                 uniqueToFk.forEach((ucn, columnName) -> m.put(uc.getColumn(ucn), table.getColumn(columnName)));
 
-                table.addForeignKey(ck.fkCons.consName, uc, m);
+                ForeignKey fk = table.addForeignKey(ck.fkCons.consName, uc, m);
+                uc.addForeignKey(fk);
             }
         });
 
