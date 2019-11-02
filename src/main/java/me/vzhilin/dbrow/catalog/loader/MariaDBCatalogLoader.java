@@ -87,7 +87,8 @@ public final class MariaDBCatalogLoader extends MetadataCatalogLoader {
 
         keys.forEach((ck, ss) -> {
             Table tb = catalog.getTable(ck.tableSchema, ck.tableName);
-            tb.addUniqueConstraint(ck.consName, ss.toArray(new String[0]));
+            UniqueConstraint uc = tb.addUniqueConstraint(ck.consName, ss.toArray(new String[0]));
+            ss.forEach(ucName -> tb.getColumn(ucName).addUniqueConstraint(uc));
         });
     }
 
