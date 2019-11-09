@@ -149,7 +149,6 @@ public final class Table {
         return true;
     }
 
-
     public UniqueConstraint findConstraint(Set<String> uniqueColumns) {
         for (UniqueConstraint uc: uniqueConstraints) {
             if (uniqueColumns.equals(uc.getColumnNames())) {

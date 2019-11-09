@@ -78,12 +78,13 @@ public final class SearchInTable {
                 pkColumns.add(pkc.getName());
             }
             String joinedPks = Joiner.on(',').join(pkColumns);
-            String exp = buildExpressions(parameters);
+            String q;
             if (parameters.isEmpty()) {
-                return Collections.emptyIterator();
+                q = String.format("SELECT %s from %s", joinedPks, qualifiedTableName);
+            } else {
+                String exp = buildExpressions(parameters);
+                q = String.format("SELECT %s from %s WHERE %s", joinedPks, qualifiedTableName, exp);
             }
-
-            String q = String.format("SELECT %s from %s WHERE %s", joinedPks, qualifiedTableName, exp);
 
             Connection conn = ctx.getConnection();
             final PreparedStatement st;
