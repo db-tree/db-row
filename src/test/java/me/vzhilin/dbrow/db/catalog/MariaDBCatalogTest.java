@@ -52,24 +52,11 @@ public class MariaDBCatalogTest {
         createTables(sample);
 
         Catalog result = loadCatalog();
-        compare(sample, result);
-    }
-
-    private void compare(Catalog sample, Catalog result) {
-        String sqlSample = exportSql(sample);
-        String sqlResult = exportSql(result);
-        assertEquals(sqlSample, sqlResult);
-    }
-
-    private String exportSql(Catalog sample) {
-        OracleCatalogExporter exporter = new OracleCatalogExporter();
-        StringWriter sw = new StringWriter();
-        exporter.export(new MariadbDatabaseAdapter(), sample, new PrintWriter(sw));
-        return sw.toString();
+        assertEquals(sample, result);
     }
 
     private Catalog loadCatalog() throws SQLException {
-        return  new CatalogLoaderFactory().getLoader(DS).load(DS, new AcceptSchema("test"));
+        return new CatalogLoaderFactory().getLoader(DS).load(DS, new AcceptSchema("test"));
     }
 
     private void createTables(Catalog sample) throws SQLException {
@@ -94,28 +81,28 @@ public class MariaDBCatalogTest {
 
     private Catalog prepareCatalog() {
         Catalog sample = new Catalog();
-        Schema schema = sample.addSchema("TEST");
-        Table aTable = schema.addTable("A");
-        aTable.addColumn("A", "DECIMAL", 0);
-        aTable.addColumn("B", "DECIMAL", 1);
-        aTable.addColumn("C", "DECIMAL", 2);
+        Schema schema = sample.addSchema("test");
+        Table aTable = schema.addTable("a");
+        aTable.addColumn("a", "DECIMAL", 0);
+        aTable.addColumn("b", "DECIMAL", 1);
+        aTable.addColumn("c", "DECIMAL", 2);
 
-        UniqueConstraint ucA = aTable.addUniqueConstraint("UC_TEST_A", new String[]{"A"});
-        UniqueConstraint ucBC = aTable.addUniqueConstraint("UC_TEST_BC", new String[]{"B", "C"});
+        UniqueConstraint ucA = aTable.addUniqueConstraint("uc_test_a", new String[]{"a"});
+        UniqueConstraint ucBC = aTable.addUniqueConstraint("uc_test_bc", new String[]{"b", "c"});
 
-        Table bTable = schema.addTable("B");
-        bTable.addColumn("D", "DECIMAL", 0);
-        bTable.addColumn("E", "DECIMAL", 1);
-        bTable.addColumn("F", "DECIMAL", 2);
+        Table bTable = schema.addTable("b");
+        bTable.addColumn("d", "DECIMAL", 0);
+        bTable.addColumn("e", "DECIMAL", 1);
+        bTable.addColumn("f", "DECIMAL", 2);
 
         BiMap<UniqueConstraintColumn, Column> fkDMapping = new BiMap<>();
-        fkDMapping.put(ucA.getColumn("A"), bTable.getColumn("D"));
-        bTable.addForeignKey("FK_B_D", ucA, fkDMapping);
+        fkDMapping.put(ucA.getColumn("a"), bTable.getColumn("d"));
+        bTable.addForeignKey("fk_b_d", ucA, fkDMapping);
 
         BiMap<UniqueConstraintColumn, Column> fkEfMapping = new BiMap<>();
-        fkEfMapping.put(ucBC.getColumn("B"), bTable.getColumn("E"));
-        fkEfMapping.put(ucBC.getColumn("C"), bTable.getColumn("F"));
-        bTable.addForeignKey("FK_B_EF", ucBC, fkEfMapping);
+        fkEfMapping.put(ucBC.getColumn("b"), bTable.getColumn("e"));
+        fkEfMapping.put(ucBC.getColumn("c"), bTable.getColumn("f"));
+        bTable.addForeignKey("fk_b_ef", ucBC, fkEfMapping);
         return sample;
     }
 }

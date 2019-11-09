@@ -20,6 +20,11 @@ public class MariadbDatabaseAdapter implements DatabaseAdapter {
     }
 
     @Override
+    public String qualifiedColumnName(String column) {
+        return "`" + column + "`";
+    }
+
+    @Override
     public String qualifiedTableName(Table table) {
         String schemaName = table.getSchemaName();
         if (schemaName != null) {

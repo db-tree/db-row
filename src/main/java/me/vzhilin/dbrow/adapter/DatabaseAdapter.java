@@ -10,5 +10,7 @@ public interface DatabaseAdapter {
 
     String qualifiedTableName(Table table);
 
+    String qualifiedColumnName(String column);
+
     String defaultSchema(Connection conn) throws SQLException;
 }

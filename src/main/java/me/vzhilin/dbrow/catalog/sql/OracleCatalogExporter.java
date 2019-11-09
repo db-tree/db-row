@@ -12,12 +12,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class OracleCatalogExporter {
     public void export(DatabaseAdapter adapter, Catalog cat, PrintWriter out) {
         exportTables(adapter, cat, out);
         exportForeignKeys(adapter, cat, out);
-
     }
 
     private void exportForeignKeys(DatabaseAdapter adapter, Catalog cat, PrintWriter out) {
@@ -30,8 +30,8 @@ public class OracleCatalogExporter {
                     List<String> fkColumnNames = new ArrayList<>();
                     List<String> ucColumnNames = new ArrayList<>();
                     fk.getColumnMapping().forEach((ucc, fkc) -> {
-                        fkColumnNames.add(fkc.getColumn().getName());
-                        ucColumnNames.add(ucc.getColumn().getName());
+                        fkColumnNames.add(adapter.qualifiedColumnName(fkc.getColumn().getName()));
+                        ucColumnNames.add(adapter.qualifiedColumnName(ucc.getColumn().getName()));
                     });
                     String fkColumns = Joiner.on(',').join(fkColumnNames);
                     String ucColumns = Joiner.on(',').join(ucColumnNames);
@@ -63,14 +63,16 @@ public class OracleCatalogExporter {
             public void accept(Table table) {
                 StringBuilder sb = new StringBuilder();
                 String qualifiedTable = adapter.qualifiedTableName(table);
-                sb.append(String.format("CREATE TABLE %s (\n",qualifiedTable));
+                sb.append(String.format("CREATE TABLE %s (\n", qualifiedTable));
                 List<String> parts = new ArrayList<>();
-                table.getColumns().forEach((name, column) -> parts.add("\t" + name + " " + column.getDataType()));
+                table.getColumns().forEach((name, column) -> parts.add("\t" + adapter.qualifiedColumnName(name) + " " + column.getDataType()));
 
                 table.getUniqueConstraints().forEach(new Consumer<>() {
                     @Override
                     public void accept(UniqueConstraint uc) {
-                        String columns = Joiner.on(',').join(uc.getColumnNames());
+                        List<String> qualifiedColumns = uc.getColumnNames().stream().map(adapter::qualifiedColumnName).collect(Collectors.toList());
+                        String columns = Joiner.on(',').join(qualifiedColumns);
+
                         constraints.add(String.format("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s);",
                             qualifiedTable, uc.getName(), columns));
                     }

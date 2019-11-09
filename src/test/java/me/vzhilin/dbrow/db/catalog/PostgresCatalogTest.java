@@ -25,7 +25,7 @@ public class PostgresCatalogTest {
     private static DataSource DS;
 
     @BeforeAll
-    public static void prepareDatasource() throws SQLException {
+    public static void prepareDatasource() {
         Locale.setDefault(Locale.US);
 
         BasicDataSource ds = new BasicDataSource();
@@ -35,7 +35,6 @@ public class PostgresCatalogTest {
         ds.setUrl("jdbc:postgresql://localhost:5432/test?autoReconnect=true");
 
         DS = ds;
-
     }
 
     @BeforeAll
@@ -57,8 +56,7 @@ public class PostgresCatalogTest {
         Catalog sample = prepareCatalog();
         createTables(sample);
 
-        Catalog result = loadCatalog();
-        compare(sample, result);
+        assertEquals(sample, loadCatalog());
     }
 
     private void compare(Catalog sample, Catalog result) {
@@ -102,26 +100,26 @@ public class PostgresCatalogTest {
         Catalog sample = new Catalog();
         Schema schema = sample.addSchema("public");
         Table aTable = schema.addTable("A");
-        aTable.addColumn("A", "DECIMAL", 0);
-        aTable.addColumn("B", "DECIMAL", 1);
-        aTable.addColumn("C", "DECIMAL", 2);
+        aTable.addColumn("A", "numeric", 0);
+        aTable.addColumn("B", "numeric", 1);
+        aTable.addColumn("C", "numeric", 2);
 
-        UniqueConstraint ucA = aTable.addUniqueConstraint("UC_TEST_A", new String[]{"A"});
-        UniqueConstraint ucBC = aTable.addUniqueConstraint("UC_TEST_BC", new String[]{"B", "C"});
+        UniqueConstraint ucA = aTable.addUniqueConstraint("uc_test_a", new String[]{"A"});
+        UniqueConstraint ucBC = aTable.addUniqueConstraint("uc_test_bc", new String[]{"B", "C"});
 
         Table bTable = schema.addTable("B");
-        bTable.addColumn("D", "DECIMAL", 0);
-        bTable.addColumn("E", "DECIMAL", 1);
-        bTable.addColumn("F", "DECIMAL", 2);
+        bTable.addColumn("D", "numeric", 0);
+        bTable.addColumn("E", "numeric", 1);
+        bTable.addColumn("F", "numeric", 2);
 
         BiMap<UniqueConstraintColumn, Column> fkDMapping = new BiMap<>();
         fkDMapping.put(ucA.getColumn("A"), bTable.getColumn("D"));
-        bTable.addForeignKey("FK_B_D", ucA, fkDMapping);
+        bTable.addForeignKey("fk_b_d", ucA, fkDMapping);
 
         BiMap<UniqueConstraintColumn, Column> fkEfMapping = new BiMap<>();
         fkEfMapping.put(ucBC.getColumn("B"), bTable.getColumn("E"));
         fkEfMapping.put(ucBC.getColumn("C"), bTable.getColumn("F"));
-        bTable.addForeignKey("FK_B_EF", ucBC, fkEfMapping);
+        bTable.addForeignKey("fk_b_ef", ucBC, fkEfMapping);
         return sample;
     }
 }

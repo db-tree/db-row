@@ -179,6 +179,14 @@ public final class Table {
         if (o == null || getClass() != o.getClass()) return false;
         Table table = (Table) o;
 
+        if (!getSchemaName().equals(table.getSchemaName())) {
+            return false;
+        }
+
+        if (!name.equals(table.getName())) {
+            return false;
+        }
+
         if (!columnsEquals(table)) {
             return false;
         }

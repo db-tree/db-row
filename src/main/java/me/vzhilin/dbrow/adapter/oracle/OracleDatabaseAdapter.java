@@ -33,6 +33,11 @@ public class OracleDatabaseAdapter implements DatabaseAdapter {
     }
 
     @Override
+    public String qualifiedColumnName(String column) {
+        return "\"" + column + "\"";
+    }
+
+    @Override
     public String defaultSchema(Connection conn) throws SQLException {
         return new QueryRunner().query(conn,"select sys_context('userenv', 'current_schema') from dual", new ScalarHandler<>());
     }
