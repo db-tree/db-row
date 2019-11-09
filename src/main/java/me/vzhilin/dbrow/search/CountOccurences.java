@@ -101,7 +101,7 @@ public final class CountOccurences {
             if (filter.acceptColumn(column.getSchema(), column.getTableName(), column.getName())) {
                 Object v;
                 if ((v = conv.fromString(text, column.getDataType())) != null) {
-                    expressions.add(name + " = ?"); // TODO escape column name
+                    expressions.add(databaseAdapter.qualifiedColumnName(name) + " = ?");
                     parameterValues.add(v);
                 }
             }
