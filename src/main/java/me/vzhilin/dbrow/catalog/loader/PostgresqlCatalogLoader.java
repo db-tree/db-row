@@ -74,8 +74,6 @@ public final class PostgresqlCatalogLoader extends MetadataCatalogLoader {
                 uc.addForeignKey(fk);
             }
         });
-
-        System.err.println(1);
     }
 
     @Override
