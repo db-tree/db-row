@@ -2,9 +2,7 @@ package me.vzhilin.dbrow.catalog;
 
 import com.google.common.collect.Iterables;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 
 public final class Catalog {
@@ -14,6 +12,10 @@ public final class Catalog {
 
     public Schema getSchema(String name) {
         return schemas.computeIfAbsent(name, Schema::new);
+    }
+
+    public Set<String> getSchemaNames() {
+        return Collections.unmodifiableSet(schemas.keySet());
     }
 
     public boolean hasTable(String schemaName, String tableName) {
@@ -47,7 +49,18 @@ public final class Catalog {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Catalog catalog = (Catalog) o;
-        return schemas.equals(catalog.schemas);
+
+        if (!Objects.equals(getSchemaNames(), catalog.getSchemaNames())) {
+            return false;
+        }
+
+        for (String schemaName: getSchemaNames()) {
+            if (!getSchema(schemaName).equals(catalog.getSchema(schemaName))) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override

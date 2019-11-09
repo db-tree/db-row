@@ -123,6 +123,51 @@ public final class Table {
             .get();
     }
 
+    private boolean uniqueConstraintsEquals(Table table) {
+        return getUniqueConstraints().equals(table.getUniqueConstraints());
+    }
+
+    private boolean foreignKeysEquals(Table table) {
+        Set<ForeignKey> fk1 = getForeignKeys();
+        Set<ForeignKey> fk2 = table.getForeignKeys();
+        return fk1.equals(fk2);
+    }
+
+    private boolean columnsEquals(Table table) {
+        if (!Objects.equals(getColumnNames(), table.getColumnNames())) {
+            return false;
+        }
+
+        for (String columnName: getColumnNames()) {
+            Column c1 = getColumn(columnName);
+            Column c2 = table.getColumn(columnName);
+
+            if (!c1.equals(c2)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    public UniqueConstraint findConstraint(Set<String> uniqueColumns) {
+        for (UniqueConstraint uc: uniqueConstraints) {
+            if (uniqueColumns.equals(uc.getColumnNames())) {
+                return uc;
+            }
+        }
+        return null;
+    }
+
+    public Set<String> getColumnNames() {
+        return Collections.unmodifiableSet(columns.keySet());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, schema);
+    }
+
     @Override
     public String toString() {
         return name;
@@ -133,21 +178,18 @@ public final class Table {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Table table = (Table) o;
-        return name.equals(table.name) &&
-                schema.equals(table.schema);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, schema);
-    }
-
-    public UniqueConstraint findConstraint(Set<String> uniqueColumns) {
-        for (UniqueConstraint uc: uniqueConstraints) {
-            if (uniqueColumns.equals(uc.getColumnNames())) {
-                return uc;
-            }
+        if (!columnsEquals(table)) {
+            return false;
         }
-        return null;
+
+        if (!uniqueConstraintsEquals(table)) {
+            return false;
+        }
+
+        if (!foreignKeysEquals(table)) {
+            return false;
+        }
+        return true;
     }
 }

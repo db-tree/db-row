@@ -52,27 +52,27 @@ public final class Column {
         return Collections.unmodifiableSet(foreignKeys);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Column column = (Column) o;
-        return name.equals(column.name) &&
-                dataType.equals(column.dataType) &&
-                table.equals(column.table);
-    }
-
     public int getIndex() {
         return index;
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(name, dataType, table);
+    public String toString() {
+        return table.getSchemaName() + "." + table.getName() + "." + name;
     }
 
     @Override
-    public String toString() {
-        return table.getSchemaName() + "." + table.getName() + "." + name;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Column column = (Column) o;
+        return index == column.index &&
+                name.equals(column.name) &&
+                dataType.equals(column.dataType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, dataType, index);
     }
 }

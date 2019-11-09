@@ -33,20 +33,33 @@ public final class Schema {
         return tables.containsKey(tableName);
     }
 
+    public void forEach(Consumer<Table> consumer) {
+        tables.values().forEach(consumer);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Schema schema = (Schema) o;
-        return name.equals(schema.name);
+
+        if (!Objects.equals(getTableNames(), schema.getTableNames())) {
+            return false;
+        }
+
+        for (String tableName: getTableNames()) {
+            Table t1 = getTable(tableName);
+            Table t2 = schema.getTable(tableName);
+
+            if (!t1.equals(t2)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(name);
-    }
-
-    public void forEach(Consumer<Table> consumer) {
-        tables.values().forEach(consumer);
     }
 }

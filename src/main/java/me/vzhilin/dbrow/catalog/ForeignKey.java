@@ -5,6 +5,7 @@ import me.vzhilin.dbrow.util.BiMap;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 public final class ForeignKey {
@@ -57,15 +58,32 @@ public final class ForeignKey {
         return fkMapping.size();
     }
 
+    public void setMapping(BiMap<UniqueConstraintColumn, ForeignKeyColumn> fkMapping) {
+        this.fkMapping = fkMapping;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ForeignKey that = (ForeignKey) o;
+        return Objects.equals(fkName, that.fkName) &&
+                table.getSchemaName().equals(that.table.getSchemaName()) &&
+                table.getName().equals(that.table.getName()) &&
+                uniqueConstraint.equals(that.uniqueConstraint) &&
+                fkMapping.equals(that.fkMapping);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fkName, table.getSchemaName(), table.getName(), uniqueConstraint, fkMapping);
+    }
+
     @Override
     public String toString() {
         return "ForeignKey{" +
                 "fkName='" + fkName + '\'' +
                 ", table=" + table +
                 '}';
-    }
-
-    public void setMapping(BiMap<UniqueConstraintColumn, ForeignKeyColumn> fkMapping) {
-        this.fkMapping = fkMapping;
     }
 }

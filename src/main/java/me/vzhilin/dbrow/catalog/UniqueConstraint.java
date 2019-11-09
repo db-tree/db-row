@@ -2,6 +2,7 @@ package me.vzhilin.dbrow.catalog;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -52,5 +53,22 @@ public final class UniqueConstraint {
 
     public String getName() {
         return constraintName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UniqueConstraint that = (UniqueConstraint) o;
+        return
+                table.getSchemaName().equals(that.table.getSchemaName()) &&
+                table.getName().equals(that.table.getName()) &&
+                Objects.equals(constraintName, that.constraintName) &&
+                columns.equals(that.columns);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(table.getSchemaName(), table.getName(), constraintName, columns);
     }
 }

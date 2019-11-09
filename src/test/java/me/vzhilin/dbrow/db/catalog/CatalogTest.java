@@ -55,13 +55,7 @@ public class CatalogTest {
         createTables(sample);
 
         Catalog result = loadCatalog();
-        compare(sample, result);
-    }
-
-    private void compare(Catalog sample, Catalog result) {
-        String sqlSample = exportSql(sample);
-        String sqlResult = exportSql(result);
-        assertEquals(sqlSample, sqlResult);
+        assertEquals(sample, result);
     }
 
     private String exportSql(Catalog sample) {
