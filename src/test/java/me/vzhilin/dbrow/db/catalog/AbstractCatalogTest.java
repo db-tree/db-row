@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,16 +34,19 @@ public abstract class AbstractCatalogTest {
         try (Connection conn = DS.getConnection()) {
             currentSchema = adapter.defaultSchema(conn);
         }
-
-        cleanup(DS);
+        cleanup();
     }
 
     @AfterEach
     public void tearDown() throws SQLException {
-        cleanup(DS);
+        cleanup();
     }
 
-    protected abstract void cleanup(DataSource ds) throws SQLException;
+    private void cleanup() throws SQLException {
+        try (Connection conn = DS.getConnection()) {
+            adapter.dropTables(conn, Arrays.asList("B", "A"));
+        }
+    }
 
     protected abstract DataSource setupDatasource() throws SQLException;
 

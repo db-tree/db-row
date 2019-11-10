@@ -4,6 +4,7 @@ import me.vzhilin.dbrow.adapter.DatabaseAdapter;
 import me.vzhilin.dbrow.adapter.IdentifierCase;
 import me.vzhilin.dbrow.adapter.ValueConverter;
 import me.vzhilin.dbrow.catalog.Table;
+import org.apache.commons.dbutils.QueryRunner;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -43,6 +44,20 @@ public class MariadbDatabaseAdapter implements DatabaseAdapter {
     @Override
     public String defaultSchema(Connection conn) throws SQLException {
         return conn.getCatalog();
+    }
+
+    @Override
+    public void dropTables(Connection conn, Iterable<String> tables) throws SQLException {
+        QueryRunner runner = new QueryRunner();
+        String schemaName = defaultSchema(conn);
+
+        for (String name: tables) {
+            try {
+                runner.update("DROP TABLE IF EXISTS " + qualifiedTableName(schemaName, name));
+            } catch (SQLException ex) {
+                // IGNORE
+            }
+        }
     }
 
     @Override

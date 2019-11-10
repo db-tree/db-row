@@ -48,6 +48,20 @@ public class OracleDatabaseAdapter implements DatabaseAdapter {
     }
 
     @Override
+    public void dropTables(Connection conn, Iterable<String> tables) throws SQLException {
+        QueryRunner runner = new QueryRunner();
+        String schemaName = defaultSchema(conn);
+
+        for (String name: tables) {
+            try {
+                runner.update("DROP TABLE " + qualifiedTableName(schemaName, name) + " CASCADE CONSTRAINTS");
+            } catch (SQLException ex) {
+                // IGNORE
+            }
+        }
+    }
+
+    @Override
     public String qualifiedSchemaName(String schemaName) {
         return "\"" + schemaName + "\"";
     }
