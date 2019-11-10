@@ -61,9 +61,6 @@ public final class CatalogTestEnvironment {
 
     @Override
     public String toString() {
-        return "CatalogTestEnvironment{" +
-                "driverClassName='" + driverClassName + '\'' +
-                ", jdbcUrl='" + jdbcUrl + '\'' +
-                '}';
+        return driverClassName + ": " + jdbcUrl;
     }
 }
