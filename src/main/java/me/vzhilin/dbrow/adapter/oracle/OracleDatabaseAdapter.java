@@ -1,6 +1,7 @@
 package me.vzhilin.dbrow.adapter.oracle;
 
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
+import me.vzhilin.dbrow.adapter.IdentifierCase;
 import me.vzhilin.dbrow.adapter.ValueConverter;
 import me.vzhilin.dbrow.catalog.Table;
 import org.apache.commons.dbutils.QueryRunner;
@@ -16,19 +17,23 @@ public class OracleDatabaseAdapter implements DatabaseAdapter {
         this.conv = new OracleValueConverter();
     }
 
-
     @Override
     public ValueConverter getConverter() {
         return conv;
     }
 
     @Override
+    public String qualifiedTableName(String schemaName, String tableName) {
+        return String.format("\"%s\".\"%s\"", schemaName, tableName);
+    }
+
+    @Override
     public String qualifiedTableName(Table table) {
         String schemaName = table.getSchemaName();
         if (schemaName != null) {
-            return String.format("\"%s\".\"%s\"", schemaName, table.getName());
+            return qualifiedTableName(table.getSchemaName(), table.getName());
         } else {
-            return String.format("\"%s\"", table.getName());
+            return "\"" + table.getName() + "\"";
         }
     }
 
@@ -40,5 +45,15 @@ public class OracleDatabaseAdapter implements DatabaseAdapter {
     @Override
     public String defaultSchema(Connection conn) throws SQLException {
         return new QueryRunner().query(conn,"select sys_context('userenv', 'current_schema') from dual", new ScalarHandler<>());
+    }
+
+    @Override
+    public String qualifiedSchemaName(String schemaName) {
+        return "\"" + schemaName + "\"";
+    }
+
+    @Override
+    public IdentifierCase getDefaultCase() {
+        return IdentifierCase.UPPER;
     }
 }

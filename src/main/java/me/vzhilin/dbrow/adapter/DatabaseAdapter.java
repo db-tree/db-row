@@ -8,9 +8,15 @@ import java.sql.SQLException;
 public interface DatabaseAdapter {
     ValueConverter getConverter();
 
+    String qualifiedTableName(String schemaName, String tableName);
+
     String qualifiedTableName(Table table);
 
     String qualifiedColumnName(String column);
 
     String defaultSchema(Connection conn) throws SQLException;
+
+    String qualifiedSchemaName(String schemaName);
+
+    IdentifierCase getDefaultCase();
 }
