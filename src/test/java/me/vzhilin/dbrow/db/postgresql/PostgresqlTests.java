@@ -87,5 +87,7 @@ public class PostgresqlTests {
             assertTrue(it.hasNext());
 //            assertEquals(value, v); TODO
         }
+
+        RUNNER.update("DROP TABLE test_01");
     }
 }

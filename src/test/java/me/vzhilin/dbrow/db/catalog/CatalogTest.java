@@ -7,10 +7,10 @@ import me.vzhilin.dbrow.catalog.filter.AcceptSchema;
 import me.vzhilin.dbrow.catalog.loader.CatalogLoaderFactory;
 import me.vzhilin.dbrow.catalog.sql.SQLCatalogExporter;
 import me.vzhilin.dbrow.util.BiMap;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.QueryRunner;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -18,42 +18,24 @@ import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public abstract class AbstractCatalogTest {
-    private DataSource DS;
+public final class CatalogTest {
+    private DataSource ds;
     private DatabaseAdapter adapter;
     private String currentSchema;
 
-    @BeforeEach
-    public void setUp() throws SQLException {
-        adapter = newAdapter();
-        DS = setupDatasource();
-        try (Connection conn = DS.getConnection()) {
-            currentSchema = adapter.defaultSchema(conn);
-        }
-        cleanup();
-    }
-
-    @AfterEach
-    public void tearDown() throws SQLException {
-        cleanup();
-    }
-
     private void cleanup() throws SQLException {
-        try (Connection conn = DS.getConnection()) {
-            adapter.dropTables(conn, Arrays.asList("B", "A"));
+        try (Connection conn = ds.getConnection()) {
+            adapter.dropTables(conn, Arrays.asList(s("B"), s("A")));
         }
     }
-
-    protected abstract DataSource setupDatasource() throws SQLException;
-
-    protected abstract DatabaseAdapter newAdapter();
 
     private Catalog loadCatalog() throws SQLException {
-        return new CatalogLoaderFactory().getLoader(DS).load(DS, new AcceptSchema(s(currentSchema)));
+        return new CatalogLoaderFactory().getLoader(ds).load(ds, new AcceptSchema(s(currentSchema)));
     }
 
     private void createTables(Catalog sample) throws SQLException {
@@ -67,7 +49,7 @@ public abstract class AbstractCatalogTest {
         Scanner sc = new Scanner(commands);
         sc.useDelimiter(";");
 
-        QueryRunner runner = new QueryRunner(DS);
+        QueryRunner runner = new QueryRunner(ds);
         while (sc.hasNext()) {
             String command = sc.next().trim();
             if (!command.isEmpty()) {
@@ -90,22 +72,37 @@ public abstract class AbstractCatalogTest {
         }
     }
 
-    protected abstract String numberColumnType();
+    @ParameterizedTest
+    @ArgumentsSource(CatalogTestArgumentsProvider.class)
+    public void testCatalogLoader(CatalogTestEnvironment env) throws SQLException {
+        Locale.setDefault(Locale.US);
 
-    @Test
-    public void testCatalogLoader() throws SQLException {
-        Catalog sample = prepareCatalog();
+        BasicDataSource ds = new BasicDataSource();
+        ds.setDriverClassName(env.getDriverClassName());
+        ds.setUsername(env.getUsername());
+        ds.setPassword(env.getPassword());
+        ds.setUrl(env.getJdbcUrl());
+        this.ds = ds;
+        this.adapter = env.getAdapter();
+        cleanup();
+
+        try (Connection conn = ds.getConnection()){
+            currentSchema = adapter.defaultSchema(conn);
+        }
+
+        Catalog sample = prepareCatalog(env.getNumberColumnType());
         createTables(sample);
 
         Catalog result = loadCatalog();
         assertEquals(sample, result);
+        cleanup();
     }
 
-    protected Catalog prepareCatalog() {
+    protected Catalog prepareCatalog(String columnType) {
         Catalog sample = new Catalog();
         Schema schema = sample.addSchema(s(currentSchema));
         Table aTable = schema.addTable(s("A"));
-        String numberType = numberColumnType();
+        String numberType = columnType;
         aTable.addColumn(s("A"), numberType, 0);
         aTable.addColumn(s("B"), numberType, 1);
         aTable.addColumn(s("C"), numberType, 2);

@@ -54,9 +54,9 @@ public final class PostgresqlAdapter implements DatabaseAdapter {
 
         for (String name: tables) {
             try {
-                runner.update("DROP TABLE IF EXISTS " + qualifiedTableName(schemaName, name));
+                runner.update(conn, "DROP TABLE IF EXISTS " + qualifiedTableName(schemaName, name));
             } catch (SQLException ex) {
-                // IGNORE
+                ex.printStackTrace(System.err);
             }
         }
     }

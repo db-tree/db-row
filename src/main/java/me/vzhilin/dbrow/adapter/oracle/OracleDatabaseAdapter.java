@@ -54,7 +54,7 @@ public class OracleDatabaseAdapter implements DatabaseAdapter {
 
         for (String name: tables) {
             try {
-                runner.update("DROP TABLE " + qualifiedTableName(schemaName, name) + " CASCADE CONSTRAINTS");
+                runner.update(conn, "DROP TABLE " + qualifiedTableName(schemaName, name) + " CASCADE CONSTRAINTS");
             } catch (SQLException ex) {
                 // IGNORE
             }
