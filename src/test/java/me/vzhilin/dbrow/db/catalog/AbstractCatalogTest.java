@@ -3,6 +3,7 @@ package me.vzhilin.dbrow.db.catalog;
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
 import me.vzhilin.dbrow.adapter.IdentifierCase;
 import me.vzhilin.dbrow.catalog.*;
+import me.vzhilin.dbrow.catalog.filter.AcceptSchema;
 import me.vzhilin.dbrow.catalog.loader.CatalogLoaderFactory;
 import me.vzhilin.dbrow.catalog.sql.SQLCatalogExporter;
 import me.vzhilin.dbrow.util.BiMap;
@@ -47,10 +48,8 @@ public abstract class AbstractCatalogTest {
 
     protected abstract DatabaseAdapter newAdapter();
 
-    protected abstract CatalogFilter getSchemaFilter(String schemaName);
-
     private Catalog loadCatalog() throws SQLException {
-        return new CatalogLoaderFactory().getLoader(DS).load(DS, getSchemaFilter(s(currentSchema)));
+        return new CatalogLoaderFactory().getLoader(DS).load(DS, new AcceptSchema(s(currentSchema)));
     }
 
     private void createTables(Catalog sample) throws SQLException {

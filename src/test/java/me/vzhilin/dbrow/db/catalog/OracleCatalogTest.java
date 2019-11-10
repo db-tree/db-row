@@ -2,8 +2,6 @@ package me.vzhilin.dbrow.db.catalog;
 
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
 import me.vzhilin.dbrow.adapter.oracle.OracleDatabaseAdapter;
-import me.vzhilin.dbrow.catalog.CatalogFilter;
-import me.vzhilin.dbrow.catalog.filter.AcceptSchema;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.ArrayHandler;
@@ -39,11 +37,6 @@ public final class OracleCatalogTest extends AbstractCatalogTest {
     @Override
     protected DatabaseAdapter newAdapter() {
         return new OracleDatabaseAdapter();
-    }
-
-    @Override
-    protected CatalogFilter getSchemaFilter(String schemaName) {
-        return new AcceptSchema(schemaName);
     }
 
     @Override

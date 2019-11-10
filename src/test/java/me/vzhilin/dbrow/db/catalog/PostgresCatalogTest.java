@@ -2,8 +2,6 @@ package me.vzhilin.dbrow.db.catalog;
 
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
 import me.vzhilin.dbrow.adapter.postgres.PostgresqlAdapter;
-import me.vzhilin.dbrow.catalog.CatalogFilter;
-import me.vzhilin.dbrow.catalog.filter.AcceptSchema;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 
@@ -31,11 +29,6 @@ public final class PostgresCatalogTest extends AbstractCatalogTest {
     @Override
     protected DatabaseAdapter newAdapter() {
         return new PostgresqlAdapter();
-    }
-
-    @Override
-    protected CatalogFilter getSchemaFilter(String schemaName) {
-        return new AcceptSchema(schemaName);
     }
 
     @Override

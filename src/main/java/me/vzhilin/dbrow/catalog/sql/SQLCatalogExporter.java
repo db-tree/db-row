@@ -57,7 +57,6 @@ public class SQLCatalogExporter {
         List<String> tables = new ArrayList<>();
         List<String> constraints = new ArrayList<>();
 
-
         cat.forEachTable(new Consumer<Table>() {
             @Override
             public void accept(Table table) {
