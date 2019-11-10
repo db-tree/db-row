@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class OracleCatalogExporter {
+public class SQLCatalogExporter {
     public void export(DatabaseAdapter adapter, Catalog cat, PrintWriter out) {
         exportTables(adapter, cat, out);
         exportForeignKeys(adapter, cat, out);

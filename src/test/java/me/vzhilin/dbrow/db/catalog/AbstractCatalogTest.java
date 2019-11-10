@@ -4,7 +4,7 @@ import me.vzhilin.dbrow.adapter.DatabaseAdapter;
 import me.vzhilin.dbrow.adapter.IdentifierCase;
 import me.vzhilin.dbrow.catalog.*;
 import me.vzhilin.dbrow.catalog.loader.CatalogLoaderFactory;
-import me.vzhilin.dbrow.catalog.sql.OracleCatalogExporter;
+import me.vzhilin.dbrow.catalog.sql.SQLCatalogExporter;
 import me.vzhilin.dbrow.util.BiMap;
 import org.apache.commons.dbutils.QueryRunner;
 import org.junit.jupiter.api.AfterEach;
@@ -55,7 +55,7 @@ public abstract class AbstractCatalogTest {
 
     private void createTables(Catalog sample) throws SQLException {
         StringWriter sw = new StringWriter();
-        new OracleCatalogExporter().export(adapter, sample, new PrintWriter(sw));
+        new SQLCatalogExporter().export(adapter, sample, new PrintWriter(sw));
         String commands = sw.toString();
         executeCommands(commands);
     }
