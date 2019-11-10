@@ -79,7 +79,7 @@ public final class SearchInTable {
             }
             String joinedPks = Joiner.on(',').join(pkColumns);
             String q;
-            if (parameters.isEmpty()) {
+            if (text.isBlank()) {
                 q = String.format("SELECT %s from %s", joinedPks, qualifiedTableName);
             } else {
                 String exp = buildExpressions(parameters);
@@ -112,8 +112,9 @@ public final class SearchInTable {
                 throw new QueryException("unable to execute query", q, e);
             }
             try {
-                return new Iterator<Row>() {
+                return new Iterator<>() {
                     boolean hasNext = rs.next();
+
                     @Override
                     public boolean hasNext() {
                         return hasNext;
@@ -146,7 +147,6 @@ public final class SearchInTable {
                         }
                     }
                 };
-
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
