@@ -99,8 +99,8 @@ public final class CatalogTest {
     }
 
     protected Catalog prepareCatalog(String columnType) {
-        Catalog sample = new Catalog();
-        Schema schema = sample.addSchema(s(currentSchema));
+        Catalog catalog = new Catalog();
+        Schema schema = catalog.addSchema(s(currentSchema));
         Table aTable = schema.addTable(s("A"));
         String numberType = columnType;
         aTable.addColumn(s("A"), numberType, 0);
@@ -123,6 +123,6 @@ public final class CatalogTest {
         fkEfMapping.put(ucBC.getColumn(s("B")), bTable.getColumn(s("E")));
         fkEfMapping.put(ucBC.getColumn(s("C")), bTable.getColumn(s("F")));
         bTable.addForeignKey(s("FK_B_EF"), ucBC, fkEfMapping);
-        return sample;
+        return catalog;
     }
 }
