@@ -1,5 +1,7 @@
 package me.vzhilin.dbrow.catalog;
 
+import com.google.common.base.Preconditions;
+
 import java.util.Objects;
 
 public final class UniqueConstraintColumn {
@@ -7,6 +9,7 @@ public final class UniqueConstraintColumn {
     private final int position;
 
     public UniqueConstraintColumn(Column column, int position) {
+        Preconditions.checkNotNull(column);
         this.column = column;
         this.position = position;
     }

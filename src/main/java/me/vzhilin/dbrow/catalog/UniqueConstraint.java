@@ -71,4 +71,12 @@ public final class UniqueConstraint {
     public int hashCode() {
         return Objects.hash(table.getSchemaName(), table.getName(), constraintName, columns);
     }
+
+    @Override
+    public String toString() {
+        return "UniqueConstraint{" +
+                "table=" + table +
+                ", constraintName='" + constraintName + '\'' +
+                '}';
+    }
 }

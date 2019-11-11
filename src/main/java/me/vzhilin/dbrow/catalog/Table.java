@@ -35,6 +35,10 @@ public final class Table {
         return foreignKeys.stream().anyMatch(foreignKey -> name.equals(foreignKey.getFkName()));
     }
 
+    public Column addColumn(String columnName, String columnType) {
+        return addColumn(columnName, columnType, columns.size());
+    }
+
     public Column addColumn(String columnName, String columnType, int columnIndex) {
         Column column = new Column(this, columnName, columnType, columnIndex);
         columns.put(columnName, column);
