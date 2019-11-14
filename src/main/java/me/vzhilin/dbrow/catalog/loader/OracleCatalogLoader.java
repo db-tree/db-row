@@ -38,8 +38,19 @@ public final class OracleCatalogLoader extends MetadataCatalogLoader {
             String columnName = (String) m.get("COLUMN_NAME");
             int position = ((Number) m.get("POSITION")).intValue();
 
+            if (!filter.acceptTable(schema, tableName)) {
+                continue;
+            }
+
             Schema s = catalog.getSchema(schema);
+            if (s == null) {
+                continue;
+            }
+
             Table t = s.getTable(tableName);
+            if (t == null) {
+                continue;
+            }
             Column c = t.getColumn(columnName);
 
             UniqueConstraintColumn ucc = new UniqueConstraintColumn(c, position);
