@@ -1,6 +1,8 @@
 package me.vzhilin.dbrow.catalog.loader;
 
 import com.google.common.base.Joiner;
+import me.vzhilin.dbrow.adapter.ColumnTypeDescription;
+import me.vzhilin.dbrow.adapter.mariadb.MariadbDatabaseAdapter;
 import me.vzhilin.dbrow.catalog.*;
 import me.vzhilin.dbrow.util.BiMap;
 import org.apache.commons.dbutils.QueryRunner;
@@ -13,6 +15,8 @@ import java.util.*;
 import java.util.function.BiConsumer;
 
 public final class MariaDBCatalogLoader extends MetadataCatalogLoader {
+    private final MariadbDatabaseAdapter adapter = new MariadbDatabaseAdapter();
+
     @Override
     protected void loadTables(QueryRunner runner, Connection conn, Catalog catalog, CatalogFilter filter) throws SQLException {
         String sql = "select TABLE_SCHEMA, TABLE_NAME from information_schema.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
@@ -47,22 +51,35 @@ public final class MariaDBCatalogLoader extends MetadataCatalogLoader {
                 String columnName = (String) m.get("COLUMN_NAME");
                 String columnType = (String) m.get("COLUMN_TYPE");
 
+                int sp;
                 if (filter.acceptColumn(schema, tableName, columnName)) {
                     String type;
                     Integer length = null;
                     Integer precision = null;
                     int br = columnType.indexOf('(');
                     if (br != -1) {
+                        int brClose = columnType.indexOf(')');
                         type = columnType.substring(0, br);
-                        int comma = columnType.indexOf(',');
-                        if (comma != -1) {
-                            length = Integer.parseInt(columnType.substring(br + 1, comma));
-                            precision = Integer.parseInt(columnType.substring(comma + 1, columnType.length() - 1));
-                        } else {
-                            length = Integer.parseInt(columnType.substring(br, columnType.length() - 1));
+
+                        ColumnTypeDescription typeDescription = adapter.getInfo().getType(type); // TODO check if not null
+                        if (typeDescription.hasLength()) {
+                            int comma = columnType.indexOf(',');
+                            if (comma != -1) {
+                                length = Integer.parseInt(columnType.substring(br + 1, comma));
+                                precision = Integer.parseInt(columnType.substring(comma + 1, brClose));
+                            } else {
+                                length = Integer.parseInt(columnType.substring(br + 1, brClose));
+                            }
                         }
+
+                        sp = columnType.indexOf(' ', brClose);
                     } else {
-                        type = columnType;
+                        sp = columnType.indexOf(' ');
+                        if (sp != -1) {
+                            type = columnType.substring(0, sp);
+                        } else {
+                            type = columnType;
+                        }
                     }
                     Column column = catalog.getSchema(schema).addTable(tableName).addColumn(columnName, type);
                     column.setLength(length);
@@ -70,7 +87,6 @@ public final class MariaDBCatalogLoader extends MetadataCatalogLoader {
                 }
             }
         }
-
     }
 
     @Override
