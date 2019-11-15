@@ -1,0 +1,16 @@
+version: '3'
+services:
+  oracle-12:
+    image: store/oracle/database-enterprise:12.1.0.2
+    ports:
+      - 1521:1521
+      - 5500:5500
+    volumes:
+      - ./oracle/oradata:/opt/oracle/oradata
+      - ./oracle/scripts:/opt/oracle/scripts/setup
+    shm_size: 8g
+    environment:
+      - DB_SID=XE
+      - DB_PDB=XE1
+      - DB_PASSWD=test
+      - DB_BUNDLE=basic
