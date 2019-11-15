@@ -24,7 +24,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class RowTests extends BaseTest {
+public final class RowTests extends BaseTest {
     @Override
     protected List<String> usedTables() {
         return Arrays.asList(s("A"), s("B"), s("C"));
@@ -39,24 +39,23 @@ public class RowTests extends BaseTest {
         createTables(catalog);
 
         executeCommands(
-            "INSERT INTO B(B1, B2) VALUES (200, 400);" +
-            "INSERT INTO B(B1, B2) VALUES (201, 401);" +
-            "INSERT INTO B(B1, B2) VALUES (202, 402);" +
-            "INSERT INTO B(B1, B2) VALUES (203, 403);"
+            String.format("INSERT INTO %s(%s, %s) VALUES (200, 400);", s("B"), s("B1"), s("B2")) +
+            String.format("INSERT INTO %s(%s, %s) VALUES (201, 401);", s("B"), s("B1"), s("B2")) +
+            String.format("INSERT INTO %s(%s, %s) VALUES (202, 402);", s("B"), s("B1"), s("B2"))
         );
 
         executeCommands(
-            "INSERT INTO C(C1, C2) VALUES (200, 405);" +
-            "INSERT INTO C(C1, C2) VALUES (201, 406);" +
-            "INSERT INTO C(C1, C2) VALUES (202, 407);" +
-            "INSERT INTO C(C1, C2) VALUES (203, 408);"
+            String.format("INSERT INTO %s(%s, %s) VALUES (200, 405);", s("C"), s("C1"), s("C2")) +
+            String.format("INSERT INTO %s(%s, %s) VALUES (201, 406);", s("C"), s("C1"), s("C2")) +
+            String.format("INSERT INTO %s(%s, %s) VALUES (202, 407);", s("C"), s("C1"), s("C2")) +
+            String.format("INSERT INTO %s(%s, %s) VALUES (203, 408);", s("C"), s("C1"), s("C2"))
         );
 
         executeCommands(
-            "INSERT INTO A(A1, A2, A3) VALUES (100, 200, 409);" +
-            "INSERT INTO A(A1, A2, A3) VALUES (101, 200, 410);" +
-            "INSERT INTO A(A1, A2, A3) VALUES (102, 201, 411);" +
-            "INSERT INTO A(A1, A2, A3) VALUES (103, 201, 412);"
+            String.format("INSERT INTO %s(%s, %s, %s) VALUES (100, 200, 409);", s("A"), s("A1"), s("A2"), s("A3")) +
+            String.format("INSERT INTO %s(%s, %s, %s) VALUES (101, 200, 410);", s("A"), s("A1"), s("A2"), s("A3")) +
+            String.format("INSERT INTO %s(%s, %s, %s) VALUES (102, 201, 411);", s("A"), s("A1"), s("A2"), s("A3")) +
+            String.format("INSERT INTO %s(%s, %s, %s) VALUES (103, 201, 412);", s("A"), s("A1"), s("A2"), s("A3"))
         );
 
         Schema schema = catalog.getSchema(s(currentSchema));

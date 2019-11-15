@@ -31,7 +31,6 @@ public final class CatalogTest extends BaseTest {
         cleanup();
     }
 
-
     protected Catalog prepareCatalog(String numberType) {
         Catalog catalog = new Catalog();
         Schema schema = catalog.addSchema(s(currentSchema));
