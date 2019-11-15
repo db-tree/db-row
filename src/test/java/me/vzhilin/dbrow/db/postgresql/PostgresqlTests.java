@@ -37,13 +37,13 @@ public class PostgresqlTests {
     public static void setUp() {
         String host = "localhost";
         int port = 5432;
-        String dbName = "test";
+        String dbName = "dbrow";
 
         DS = new BasicDataSource();
         DS.setDriverClassName("org.postgresql.Driver");
         DS.setUrl("jdbc:postgresql://" + host + ":" + port + "/"+ dbName + "?autoReconnect=true");
-        DS.setUsername("user");
-        DS.setPassword("user");
+        DS.setUsername("dbrow");
+        DS.setPassword("dbrow");
         ADAPTER = new PostgresqlAdapter();
 
         RUNNER = new QueryRunner(DS);
