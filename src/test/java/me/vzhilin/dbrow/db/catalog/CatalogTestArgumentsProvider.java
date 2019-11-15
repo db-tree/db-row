@@ -17,8 +17,8 @@ public class CatalogTestArgumentsProvider implements ArgumentsProvider {
         List<Arguments> args = new ArrayList<>();
         CatalogTestEnvironment oracle = new CatalogTestEnvironment();
         oracle.setDriverClassName("oracle.jdbc.OracleDriver");
-        oracle.setUsername("test");
-        oracle.setPassword("test");
+        oracle.setUsername("C##DB_ROW");
+        oracle.setPassword("DB_ROW");
         oracle.setJdbcUrl("jdbc:oracle:thin:@localhost:1521:XE");
         oracle.setAdapter(new OracleDatabaseAdapter());
         oracle.setNumberColumnType("NUMBER");
@@ -33,15 +33,15 @@ public class CatalogTestArgumentsProvider implements ArgumentsProvider {
 
         CatalogTestEnvironment postgres = new CatalogTestEnvironment();
         postgres.setDriverClassName("org.postgresql.Driver");
-        postgres.setUsername("user");
-        postgres.setPassword("user");
-        postgres.setJdbcUrl("jdbc:postgresql://localhost:5432/test?autoReconnect=true");
+        postgres.setUsername("dbrow");
+        postgres.setPassword("dbrow");
+        postgres.setJdbcUrl("jdbc:postgresql://localhost:5432/dbrow?autoReconnect=true");
         postgres.setAdapter(new PostgresqlAdapter());
         postgres.setNumberColumnType("numeric");
 
         args.add(Arguments.of(oracle));
-        args.add(Arguments.of(mariaDb));
         args.add(Arguments.of(postgres));
+        args.add(Arguments.of(mariaDb));
         return args.stream();
     }
 }

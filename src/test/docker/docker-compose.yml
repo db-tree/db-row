@@ -14,3 +14,11 @@ services:
       - DB_PDB=XE1
       - DB_PASSWD=test
       - DB_BUNDLE=basic
+  postgres-12:
+    image: postgres:12.0-alpine
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=dbrow
+      - POSTGRES_PASSWORD=dbrow
+      - POSTGRES_DB=dbrow
