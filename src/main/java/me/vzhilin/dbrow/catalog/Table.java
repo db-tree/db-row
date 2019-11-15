@@ -49,30 +49,14 @@ public final class Table {
         return columns.get(columnName);
     }
 
-//    public PrimaryKeyColumn getPrimaryKeyColumn(String name) {
-//        return getPrimaryKey().get().getColumn(name);
-//    }
-
-//    public Optional<PrimaryKey> getPrimaryKey() {
-//        return primaryKey;
-//    }
-
-//    public void setPk(PrimaryKey pk) {
-//        primaryKey = Optional.ofNullable(pk);
-//    }
-
-//    public ForeignKey addForeignKey(String fkName, Table toTable, BiMap<PrimaryKeyColumn, ForeignKeyColumn> cols) {
-//        ForeignKey foreignKey = new ForeignKey(fkName, this, toTable, cols);
-//        foreignKeys.put(fkName, foreignKey);
-//        return foreignKey;
-//    }
-
     public ForeignKey addForeignKey(String fkName, UniqueConstraint unique, BiMap<UniqueConstraintColumn, Column> mapping) {
         BiMap<UniqueConstraintColumn, ForeignKeyColumn> fkMapping = new BiMap<>();
         ForeignKey fkConstraint = new ForeignKey(fkName, this, unique);
         mapping.forEach((ucc, column) -> fkMapping.put(ucc, new ForeignKeyColumn(fkConstraint, column)));
         fkConstraint.setMapping(fkMapping);
         foreignKeys.add(fkConstraint);
+
+        schema.addForeignKeyConstraint(fkConstraint);
         return fkConstraint;
     }
 
@@ -104,6 +88,8 @@ public final class Table {
         }
         UniqueConstraint cons = new UniqueConstraint(this, ucc, constraintName);
         uniqueConstraints.add(cons);
+        schema.addUniqueConstraint(cons);
+
         return cons;
     }
 

@@ -6,6 +6,11 @@ import java.util.function.Consumer;
 public final class Schema {
     private final String name;
     private final Map<String, Table> tables = new LinkedHashMap<>();
+    private final Map<String, UniqueConstraint> namedUniqueConstraints = new LinkedHashMap<>();
+    private final Map<String, ForeignKey> namedForeignKeyConstraints = new LinkedHashMap<>();
+
+    private final Set<UniqueConstraint> unamedUniqueConstraints = new LinkedHashSet<>();
+    private final Set<ForeignKey> unamedForeignKeyConstraints = new LinkedHashSet<>();
 
     public Schema(String name) {
         this.name = name;
@@ -13,6 +18,28 @@ public final class Schema {
 
     public String getName() {
         return name;
+    }
+
+    void addUniqueConstraint(UniqueConstraint cons) {
+        String name = cons.getName();
+        if (name == null || name.isEmpty()) {
+            unamedUniqueConstraints.add(cons);
+        } else {
+            namedUniqueConstraints.put(name, cons);
+        }
+    }
+
+    void addForeignKeyConstraint(ForeignKey fkConstraint) {
+        String name = fkConstraint.getFkName();
+        if (name == null || name.isEmpty()) {
+            unamedForeignKeyConstraints.add(fkConstraint);
+        } else {
+            namedForeignKeyConstraints.put(name, fkConstraint);
+        }
+    }
+
+    public UniqueConstraint getUniqueConstraint(String ucConstraint) {
+        return namedUniqueConstraints.get(ucConstraint);
     }
 
     public Table addTable(String tableName) {

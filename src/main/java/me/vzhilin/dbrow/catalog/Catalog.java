@@ -44,6 +44,10 @@ public final class Catalog {
         return schema;
     }
 
+    public Iterable<? extends Schema> getSchemas() {
+        return Collections.unmodifiableCollection(schemas.values());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

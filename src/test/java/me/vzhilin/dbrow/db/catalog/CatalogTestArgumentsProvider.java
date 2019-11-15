@@ -25,9 +25,9 @@ public class CatalogTestArgumentsProvider implements ArgumentsProvider {
 
         CatalogTestEnvironment mariaDb = new CatalogTestEnvironment();
         mariaDb.setDriverClassName("org.mariadb.jdbc.Driver");
-        mariaDb.setUsername("test");
-        mariaDb.setPassword("test");
-        mariaDb.setJdbcUrl("jdbc:mariadb://localhost:3306/test");
+        mariaDb.setUsername("dbrow");
+        mariaDb.setPassword("dbrow");
+        mariaDb.setJdbcUrl("jdbc:mariadb://localhost:3306/dbrow");
         mariaDb.setAdapter(new MariadbDatabaseAdapter());
         mariaDb.setNumberColumnType("DECIMAL");
 
