@@ -1,4 +1,4 @@
-package me.vzhilin.dbrow.db.postgresql;
+package me.vzhilin.dbrow.db.misc.postgresql;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;

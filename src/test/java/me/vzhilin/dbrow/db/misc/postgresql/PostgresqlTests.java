@@ -1,4 +1,4 @@
-package me.vzhilin.dbrow.db.postgresql;
+package me.vzhilin.dbrow.db.misc.postgresql;
 
 import me.vzhilin.dbrow.adapter.postgres.PostgresqlAdapter;
 import me.vzhilin.dbrow.catalog.Catalog;
