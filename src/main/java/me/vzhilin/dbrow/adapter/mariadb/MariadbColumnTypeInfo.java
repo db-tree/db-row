@@ -1,4 +1,8 @@
-package me.vzhilin.dbrow.adapter;
+package me.vzhilin.dbrow.adapter.mariadb;
+
+import me.vzhilin.dbrow.adapter.ColumnType;
+import me.vzhilin.dbrow.adapter.ColumnTypeDescription;
+import me.vzhilin.dbrow.adapter.ColumnTypeInfo;
 
 import java.util.*;
 

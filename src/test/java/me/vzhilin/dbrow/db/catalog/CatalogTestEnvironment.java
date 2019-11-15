@@ -2,7 +2,7 @@ package me.vzhilin.dbrow.db.catalog;
 
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
 
-public final class CatalogTestEnvironment {
+public class CatalogTestEnvironment {
     private String driverClassName;
     private String username;
     private String password;

@@ -20,4 +20,6 @@ public interface DatabaseAdapter {
     String qualifiedColumnName(String column);
 
     String qualifiedSchemaName(String schemaName);
+
+    ColumnTypeInfo getInfo();
 }

@@ -3,13 +3,13 @@ package me.vzhilin.dbrow.db.misc.mariadb;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import me.vzhilin.dbrow.adapter.ColumnTypeDescription;
-import me.vzhilin.dbrow.adapter.mariadb.MariadbDatabaseAdapter;
 import me.vzhilin.dbrow.catalog.Catalog;
 import me.vzhilin.dbrow.catalog.Column;
 import me.vzhilin.dbrow.catalog.Table;
 import me.vzhilin.dbrow.catalog.TableId;
 import me.vzhilin.dbrow.db.BaseTest;
 import me.vzhilin.dbrow.db.catalog.CatalogTestEnvironment;
+import me.vzhilin.dbrow.db.env.MariadbTestEnvironment;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MariadbCatalogLoaderTest extends BaseTest {
+public final class MariadbCatalogLoaderTest extends BaseTest {
     @Override
     protected List<TableId> usedTables() {
         return Collections.singletonList(new TableId(currentSchema, s("x")));
@@ -29,13 +29,7 @@ public class MariadbCatalogLoaderTest extends BaseTest {
 
     @Test
     public void checkIfAbleLoadSupportedColumns() throws SQLException {
-        CatalogTestEnvironment mariaDb = new CatalogTestEnvironment();
-        mariaDb.setDriverClassName("org.mariadb.jdbc.Driver");
-        mariaDb.setUsername("dbrow");
-        mariaDb.setPassword("dbrow");
-        mariaDb.setJdbcUrl("jdbc:mariadb://localhost:3306/dbrow");
-        MariadbDatabaseAdapter adapter = new MariadbDatabaseAdapter();
-        mariaDb.setAdapter(adapter);
+        CatalogTestEnvironment mariaDb = new MariadbTestEnvironment();
         setupEnv(mariaDb);
 
         cleanup();

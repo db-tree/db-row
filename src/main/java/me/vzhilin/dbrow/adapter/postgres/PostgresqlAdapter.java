@@ -1,5 +1,6 @@
 package me.vzhilin.dbrow.adapter.postgres;
 
+import me.vzhilin.dbrow.adapter.ColumnTypeInfo;
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
 import me.vzhilin.dbrow.adapter.IdentifierCase;
 import me.vzhilin.dbrow.adapter.ValueConverter;
@@ -63,6 +64,11 @@ public final class PostgresqlAdapter implements DatabaseAdapter {
     @Override
     public String qualifiedSchemaName(String schemaName) {
         return "\"" + schemaName + "\"";
+    }
+
+    @Override
+    public ColumnTypeInfo getInfo() {
+        return null;
     }
 
     @Override
