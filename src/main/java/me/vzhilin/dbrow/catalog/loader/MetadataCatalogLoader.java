@@ -33,8 +33,8 @@ public abstract class MetadataCatalogLoader implements CatalogLoader {
 
     protected void loadCatalog(Catalog catalog, Connection conn, QueryRunner runner, CatalogFilter filter, DatabaseMetaData metadata) throws SQLException {
         loadSchemas(catalog, filter, metadata);
-        loadTables(catalog, filter, metadata);
-        loadColumns(catalog, metadata);
+        loadTables(runner, conn, catalog, filter);
+        loadColumns(runner, conn, catalog, filter);
 
         loadUniqueConstraints(runner, conn, catalog, filter, metadata);
         loadForeignConstraints(runner, conn, catalog, filter);
@@ -44,11 +44,11 @@ public abstract class MetadataCatalogLoader implements CatalogLoader {
 
     protected abstract void loadUniqueConstraints(QueryRunner runner, Connection conn, Catalog catalog, CatalogFilter filter, DatabaseMetaData metadata) throws SQLException;
 
-    protected void loadColumns(Catalog catalog, DatabaseMetaData metadata) {
+    protected void loadColumns(QueryRunner runner, Connection conn, Catalog catalog, CatalogFilter filter) throws SQLException {
         catalog.forEachTable(new Consumer<Table>() {
             @Override
             public void accept(Table table) {
-                try (ResultSet columns = metadata.getColumns(null, table.getSchemaName(), table.getName(), null)){
+                try (ResultSet columns = conn.getMetaData().getColumns(null, table.getSchemaName(), table.getName(), null)){
                     while (columns.next()) {
                         String columnName = columns.getString("COLUMN_NAME");
                         String columnType = columns.getString("TYPE_NAME");
@@ -62,10 +62,11 @@ public abstract class MetadataCatalogLoader implements CatalogLoader {
         });
     }
 
-    protected void loadTables(Catalog catalog, CatalogFilter filter, DatabaseMetaData metadata) {
+    protected void loadTables(QueryRunner runner, Connection conn, Catalog catalog, CatalogFilter filter) throws SQLException {
         catalog.forEachSchema(schema -> {
             try {
-                ResultSet tables = metadata.getTables(null, schema.getName(), null, null);
+                DatabaseMetaData metaData = conn.getMetaData();
+                ResultSet tables = metaData.getTables(null, schema.getName(), null, null);
                 while (tables.next()) {
                     String tableName = tables.getString("TABLE_NAME");
                     String tableType = tables.getString("TABLE_TYPE");

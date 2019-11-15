@@ -25,9 +25,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public final class RowTests extends BaseTest {
+
+    public static final String SCHEMA_NAME = "C##DB_ROW";
+
     @Override
-    protected List<String> usedTables() {
-        return Arrays.asList(s("A"), s("B"), s("C"));
+    protected List<TableId> usedTables() {
+        TableId c = new TableId(s(SCHEMA_NAME), s("C"));
+        TableId b = new TableId(s(SCHEMA_NAME), s("B"));
+        TableId a = new TableId(s(SCHEMA_NAME), s("A"));
+        return Arrays.asList(a, b, c);
     }
 
     @ParameterizedTest
@@ -38,27 +44,31 @@ public final class RowTests extends BaseTest {
         Catalog catalog = getCatalog(env.getNumberColumnType());
         createTables(catalog);
 
+        String aTable = adapter.qualifiedTableName(s(SCHEMA_NAME), s("A"));
+        String bTable = adapter.qualifiedTableName(s(SCHEMA_NAME), s("B"));
+        String cTable = adapter.qualifiedTableName(s(SCHEMA_NAME), s("C"));
+
         executeCommands(
-            String.format("INSERT INTO %s(%s, %s) VALUES (200, 400);", s("B"), s("B1"), s("B2")) +
-            String.format("INSERT INTO %s(%s, %s) VALUES (201, 401);", s("B"), s("B1"), s("B2")) +
-            String.format("INSERT INTO %s(%s, %s) VALUES (202, 402);", s("B"), s("B1"), s("B2"))
+            String.format("INSERT INTO %s(%s, %s) VALUES (200, 400);", bTable, s("B1"), s("B2")) +
+            String.format("INSERT INTO %s(%s, %s) VALUES (201, 401);", bTable, s("B1"), s("B2")) +
+            String.format("INSERT INTO %s(%s, %s) VALUES (202, 402);", bTable, s("B1"), s("B2"))
         );
 
         executeCommands(
-            String.format("INSERT INTO %s(%s, %s) VALUES (200, 405);", s("C"), s("C1"), s("C2")) +
-            String.format("INSERT INTO %s(%s, %s) VALUES (201, 406);", s("C"), s("C1"), s("C2")) +
-            String.format("INSERT INTO %s(%s, %s) VALUES (202, 407);", s("C"), s("C1"), s("C2")) +
-            String.format("INSERT INTO %s(%s, %s) VALUES (203, 408);", s("C"), s("C1"), s("C2"))
+            String.format("INSERT INTO %s(%s, %s) VALUES (200, 405);", cTable, s("C1"), s("C2")) +
+            String.format("INSERT INTO %s(%s, %s) VALUES (201, 406);", cTable, s("C1"), s("C2")) +
+            String.format("INSERT INTO %s(%s, %s) VALUES (202, 407);", cTable, s("C1"), s("C2")) +
+            String.format("INSERT INTO %s(%s, %s) VALUES (203, 408);", cTable, s("C1"), s("C2"))
         );
 
         executeCommands(
-            String.format("INSERT INTO %s(%s, %s, %s) VALUES (100, 200, 409);", s("A"), s("A1"), s("A2"), s("A3")) +
-            String.format("INSERT INTO %s(%s, %s, %s) VALUES (101, 200, 410);", s("A"), s("A1"), s("A2"), s("A3")) +
-            String.format("INSERT INTO %s(%s, %s, %s) VALUES (102, 201, 411);", s("A"), s("A1"), s("A2"), s("A3")) +
-            String.format("INSERT INTO %s(%s, %s, %s) VALUES (103, 201, 412);", s("A"), s("A1"), s("A2"), s("A3"))
+            String.format("INSERT INTO %s(%s, %s, %s) VALUES (100, 200, 409);", aTable, s("A1"), s("A2"), s("A3")) +
+            String.format("INSERT INTO %s(%s, %s, %s) VALUES (101, 200, 410);", aTable, s("A1"), s("A2"), s("A3")) +
+            String.format("INSERT INTO %s(%s, %s, %s) VALUES (102, 201, 411);", aTable, s("A1"), s("A2"), s("A3")) +
+            String.format("INSERT INTO %s(%s, %s, %s) VALUES (103, 201, 412);", aTable, s("A1"), s("A2"), s("A3"))
         );
 
-        Schema schema = catalog.getSchema(s(currentSchema));
+        Schema schema = catalog.getSchema(s(SCHEMA_NAME));
         try (Connection conn = ds.getConnection()) {
             RowContext ctx = new RowContext(catalog, adapter, conn, new QueryRunner());
             Table a = schema.getTable(s("A"));
@@ -89,7 +99,7 @@ public final class RowTests extends BaseTest {
 
     private Row getA(RowContext ctx, int a1) {
         Map<UniqueConstraintColumn, Object> key = new HashMap<>();
-        Table aTable = ctx.getCatalog().getOnlySchema().getTable(s("A"));
+        Table aTable = ctx.getCatalog().getSchema(s(SCHEMA_NAME)).getTable(s("A"));
         UniqueConstraint ucA = aTable.getAnyUniqueConstraint();
         key.put(ucA.getColumn(s("A1")), new BigDecimal(a1));
         return new Row(ctx, new ObjectKey(ucA, key));
@@ -97,7 +107,7 @@ public final class RowTests extends BaseTest {
 
     private Catalog getCatalog(String columnType) {
         Catalog catalog = new Catalog();
-        Schema schema = catalog.addSchema(s(currentSchema));
+        Schema schema = catalog.addSchema(s(SCHEMA_NAME));
         Table aTable = schema.addTable(s("A"));
         aTable.addColumn(s("A1"), columnType);
         aTable.addColumn(s("A2"), columnType);

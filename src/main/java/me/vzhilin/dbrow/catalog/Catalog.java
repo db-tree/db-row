@@ -39,9 +39,7 @@ public final class Catalog {
     }
 
     public Schema addSchema(String schemaName) {
-        Schema schema = new Schema(schemaName);
-        schemas.put(schemaName, schema);
-        return schema;
+        return schemas.computeIfAbsent(schemaName, Schema::new);
     }
 
     public Iterable<? extends Schema> getSchemas() {

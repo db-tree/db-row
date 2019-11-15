@@ -3,6 +3,7 @@ package me.vzhilin.dbrow.db;
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
 import me.vzhilin.dbrow.adapter.IdentifierCase;
 import me.vzhilin.dbrow.catalog.Catalog;
+import me.vzhilin.dbrow.catalog.TableId;
 import me.vzhilin.dbrow.catalog.filter.AcceptSchema;
 import me.vzhilin.dbrow.catalog.loader.CatalogLoaderFactory;
 import me.vzhilin.dbrow.catalog.sql.SQLCatalogExporter;
@@ -31,12 +32,12 @@ public class BaseTest {
         }
     }
 
-    protected List<String> usedTables() {
+    protected List<TableId> usedTables() {
         return Collections.emptyList();
     }
 
-    protected Catalog loadCatalog() throws SQLException {
-        return new CatalogLoaderFactory().getLoader(ds).load(ds, new AcceptSchema(s(currentSchema)));
+    protected Catalog loadCatalog(String... schemas) throws SQLException {
+        return new CatalogLoaderFactory().getLoader(ds).load(ds, new AcceptSchema(schemas));
     }
 
     protected void setupSchema() throws SQLException {

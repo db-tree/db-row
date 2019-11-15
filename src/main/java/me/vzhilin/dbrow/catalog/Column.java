@@ -10,6 +10,8 @@ public final class Column {
     private final String dataType;
     private final Table table;
     private final int index;
+    private Integer length;
+    private Integer precision;
     private final Set<UniqueConstraint> uniqueConstraints = new LinkedHashSet<>();
     private final Set<ForeignKey> foreignKeys = new LinkedHashSet<>();
 
@@ -56,6 +58,22 @@ public final class Column {
         return index;
     }
 
+    public Integer getLength() {
+        return length;
+    }
+
+    public Integer getPrecision() {
+        return precision;
+    }
+
+    public void setLength(Integer length) {
+        this.length = length;
+    }
+
+    public void setPrecision(Integer precision) {
+        this.precision = precision;
+    }
+
     @Override
     public String toString() {
         return table.getSchemaName() + "." + table.getName() + "." + name;
@@ -68,7 +86,7 @@ public final class Column {
         Column column = (Column) o;
         return index == column.index &&
                 name.equals(column.name) &&
-                dataType.equals(column.dataType);
+                dataType.equals(column.dataType) ;
     }
 
     @Override

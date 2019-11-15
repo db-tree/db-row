@@ -29,7 +29,7 @@ public class CatalogTestArgumentsProvider implements ArgumentsProvider {
         mariaDb.setPassword("dbrow");
         mariaDb.setJdbcUrl("jdbc:mariadb://localhost:3306/dbrow");
         mariaDb.setAdapter(new MariadbDatabaseAdapter());
-        mariaDb.setNumberColumnType("DECIMAL");
+        mariaDb.setNumberColumnType("decimal");
 
         CatalogTestEnvironment postgres = new CatalogTestEnvironment();
         postgres.setDriverClassName("org.postgresql.Driver");

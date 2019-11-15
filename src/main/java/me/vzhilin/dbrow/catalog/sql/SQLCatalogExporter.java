@@ -2,10 +2,9 @@ package me.vzhilin.dbrow.catalog.sql;
 
 import com.google.common.base.Joiner;
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
-import me.vzhilin.dbrow.catalog.Catalog;
-import me.vzhilin.dbrow.catalog.ForeignKey;
-import me.vzhilin.dbrow.catalog.Table;
-import me.vzhilin.dbrow.catalog.UniqueConstraint;
+import me.vzhilin.dbrow.adapter.mariadb.MariadbDatabaseAdapter;
+import me.vzhilin.dbrow.adapter.postgres.PostgresqlAdapter;
+import me.vzhilin.dbrow.catalog.*;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -22,7 +21,6 @@ public class SQLCatalogExporter {
 
     private void exportForeignKeys(DatabaseAdapter adapter, Catalog cat, PrintWriter out) {
         List<String> constraints = new ArrayList<>();
-
         cat.forEachTable(new Consumer<Table>() {
             @Override
             public void accept(Table table) {
@@ -56,6 +54,24 @@ public class SQLCatalogExporter {
     private void exportTables(DatabaseAdapter adapter, Catalog cat, PrintWriter out) {
         List<String> tables = new ArrayList<>();
         List<String> constraints = new ArrayList<>();
+
+        if (adapter instanceof PostgresqlAdapter) {
+            cat.forEachSchema(new Consumer<Schema>() {
+                @Override
+                public void accept(Schema schema) {
+                    out.println("CREATE SCHEMA IF NOT EXISTS " + adapter.qualifiedSchemaName(schema.getName()) + ";");
+                }
+            });
+        }
+
+        if (adapter instanceof MariadbDatabaseAdapter) {
+            cat.forEachSchema(new Consumer<Schema>() {
+                @Override
+                public void accept(Schema schema) {
+                    out.println("CREATE DATABASE IF NOT EXISTS " + adapter.qualifiedSchemaName(schema.getName()) + ";");
+                }
+            });
+        }
 
         cat.forEachTable(new Consumer<Table>() {
             @Override

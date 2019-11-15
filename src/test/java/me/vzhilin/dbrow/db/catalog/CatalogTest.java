@@ -14,8 +14,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public final class CatalogTest extends BaseTest {
     @Override
-    protected List<String> usedTables() {
-        return Arrays.asList(s("B"), s("A"));
+    protected List<TableId> usedTables() {
+        TableId b = new TableId(s("C##TEST"), s("B"));
+        TableId a = new TableId(s("C##TEST"), s("A"));
+        return Arrays.asList(b, a);
     }
 
     @ParameterizedTest
@@ -26,26 +28,26 @@ public final class CatalogTest extends BaseTest {
         Catalog sample = prepareCatalog(env.getNumberColumnType());
         createTables(sample);
 
-        Catalog result = loadCatalog();
+        Catalog result = loadCatalog(s("C##TEST"));
         assertEquals(sample, result);
         cleanup();
     }
 
     protected Catalog prepareCatalog(String numberType) {
         Catalog catalog = new Catalog();
-        Schema schema = catalog.addSchema(s(currentSchema));
+        Schema schema = catalog.addSchema(s("C##TEST"));
         Table aTable = schema.addTable(s("A"));
-        aTable.addColumn(s("A"), numberType, 0);
-        aTable.addColumn(s("B"), numberType, 1);
-        aTable.addColumn(s("C"), numberType, 2);
+        aTable.addColumn(s("A"), numberType);
+        aTable.addColumn(s("B"), numberType);
+        aTable.addColumn(s("C"), numberType);
 
         UniqueConstraint ucA = aTable.addUniqueConstraint(s("UC_TEST_A"), new String[]{s("A")});
         UniqueConstraint ucBC = aTable.addUniqueConstraint(s("UC_TEST_BC"), new String[]{s("B"), s("C")});
 
         Table bTable = schema.addTable(s("B"));
-        bTable.addColumn(s("D"), numberType, 0);
-        bTable.addColumn(s("E"), numberType, 1);
-        bTable.addColumn(s("F"), numberType, 2);
+        bTable.addColumn(s("D"), numberType);
+        bTable.addColumn(s("E"), numberType);
+        bTable.addColumn(s("F"), numberType);
 
         BiMap<UniqueConstraintColumn, Column> fkDMapping = new BiMap<>();
         fkDMapping.put(ucA.getColumn(s("A")), bTable.getColumn(s("D")));

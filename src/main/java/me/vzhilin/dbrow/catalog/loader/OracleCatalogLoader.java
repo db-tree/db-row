@@ -75,8 +75,8 @@ public final class OracleCatalogLoader extends MetadataCatalogLoader {
                 "    uc.table_name, \n" +
                 "    ucc.column_name, \n" +
                 "    ucc.position \n" +
-                "from user_constraints uc \n" +
-                "join USER_CONS_COLUMNS ucc on uc.constraint_name = ucc.constraint_name\n" +
+                "from all_constraints uc \n" +
+                "join all_cons_columns ucc on uc.constraint_name = ucc.constraint_name\n" +
                 "where uc.constraint_type in ('U', 'P') AND uc.owner = ? AND uc.table_name IN (" + qm + ")";
     }
 
@@ -104,9 +104,9 @@ public final class OracleCatalogLoader extends MetadataCatalogLoader {
                         "    fk.position as fk_position, \n" +
                         "    uc.column_name as uc_column, \n" +
                         "    uc.position as uc_position\n" +
-                        "from user_constraints uc \n" +
-                        "join user_cons_columns fk on fk.constraint_name = uc.constraint_name\n" +
-                        "join user_cons_columns uc on uc.constraint_name = uc.r_constraint_name\n" +
+                        "from all_constraints uc \n" +
+                        "join all_cons_columns fk on fk.constraint_name = uc.constraint_name\n" +
+                        "join all_cons_columns uc on uc.constraint_name = uc.r_constraint_name\n" +
                         "where uc.constraint_type in ('R')\n" +
                         "and uc.owner = ? and uc.table_name in (" + qm + ") " +
                         "and fk.position = uc.position";
@@ -134,7 +134,7 @@ public final class OracleCatalogLoader extends MetadataCatalogLoader {
 
                 String query =
                     "select owner, table_name, constraint_name, r_owner, r_constraint_name\n" +
-                    "from user_constraints uc \n" +
+                    "from all_constraints uc \n" +
                     "where constraint_type in ('R') and owner = ? and table_name in (" + qm + ") ";
 
                 List<Map<String, Object>> rs = runner.query(conn, query, new MapListHandler(), params.toArray());

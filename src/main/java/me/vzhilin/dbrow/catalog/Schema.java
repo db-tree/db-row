@@ -43,9 +43,7 @@ public final class Schema {
     }
 
     public Table addTable(String tableName) {
-        Table newTable = new Table(this, tableName);
-        tables.put(tableName, newTable);
-        return newTable;
+        return tables.computeIfAbsent(tableName, s -> new Table(Schema.this, tableName));
     }
 
     public Table getTable(String tableName) {

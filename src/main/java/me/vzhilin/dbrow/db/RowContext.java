@@ -42,12 +42,7 @@ public final class RowContext {
         sb.append(columns).append(" FROM ");
 
         String schemaName = table.getSchemaName();
-        if (schemaName != null) {
-            sb.append(schemaName + ".");
-        }
-
-        sb.append(table.getName());
-
+        sb.append(adapter.qualifiedTableName(schemaName, table.getName()));
         sb.append(" WHERE ");
 
         UniqueConstraint pk = table.getAnyUniqueConstraint();

@@ -1,5 +1,6 @@
 package me.vzhilin.dbrow.catalog.loader;
 
+import com.google.common.base.Joiner;
 import me.vzhilin.dbrow.catalog.*;
 import me.vzhilin.dbrow.util.BiMap;
 import org.apache.commons.dbutils.QueryRunner;
@@ -12,6 +13,66 @@ import java.util.*;
 import java.util.function.BiConsumer;
 
 public final class MariaDBCatalogLoader extends MetadataCatalogLoader {
+    @Override
+    protected void loadTables(QueryRunner runner, Connection conn, Catalog catalog, CatalogFilter filter) throws SQLException {
+        String sql = "select TABLE_SCHEMA, TABLE_NAME from information_schema.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
+        for (Map<String, Object> m: runner.query(conn, sql, new MapListHandler())) {
+            String tableSchema = (String) m.get("TABLE_SCHEMA");
+            String tableName = (String) m.get("TABLE_NAME");
+
+            if (filter.acceptTable(tableSchema, tableName)) {
+                catalog.addSchema(tableSchema).addTable(tableName);
+            }
+        }
+    }
+
+    @Override
+    protected void loadColumns(QueryRunner runner, Connection conn, Catalog catalog, CatalogFilter filter) throws SQLException {
+        for (String schema: catalog.getSchemaNames()) {
+            Set<String> tableNames = catalog.getSchema(schema).getTableNames();
+
+            Character[] qms = new Character[tableNames.size()];
+            Arrays.fill(qms, '?');
+            String qm = Joiner.on(',').join(qms);
+
+            List<Object> params = new ArrayList<>(tableNames.size() + 1);
+            params.add(schema);
+            params.addAll(tableNames);
+
+            String sql = "select TABLE_NAME, COLUMN_NAME, COLUMN_TYPE from information_schema.`COLUMNS`" +
+                    " where TABLE_SCHEMA = ? AND TABLE_NAME in (" + qm + ")";
+
+            for (Map<String, Object> m: runner.query(conn, sql, new MapListHandler(), params.toArray())) {
+                String tableName = (String) m.get("TABLE_NAME");
+                String columnName = (String) m.get("COLUMN_NAME");
+                String columnType = (String) m.get("COLUMN_TYPE");
+
+                if (filter.acceptColumn(schema, tableName, columnName)) {
+                    String type;
+                    Integer length = null;
+                    Integer precision = null;
+                    int br = columnType.indexOf('(');
+                    if (br != -1) {
+                        type = columnType.substring(0, br);
+                        int comma = columnType.indexOf(',');
+                        if (comma != -1) {
+                            length = Integer.parseInt(columnType.substring(br + 1, comma));
+                            precision = Integer.parseInt(columnType.substring(comma + 1, columnType.length() - 1));
+                        } else {
+                            length = Integer.parseInt(columnType.substring(br, columnType.length() - 1));
+                        }
+                    } else {
+                        type = columnType;
+                    }
+                    Column column = catalog.getSchema(schema).addTable(tableName).addColumn(columnName, type);
+                    column.setLength(length);
+                    column.setPrecision(precision);
+                }
+            }
+        }
+
+    }
+
     @Override
     protected void loadForeignConstraints(QueryRunner runner, Connection conn, Catalog catalog, CatalogFilter filter) throws SQLException {
         String sql = "select * from information_schema.KEY_COLUMN_USAGE\n" +
