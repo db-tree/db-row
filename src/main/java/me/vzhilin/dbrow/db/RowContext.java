@@ -170,7 +170,7 @@ public final class RowContext {
 
             Set<String> pkColumns = fk.getTable().getAnyUniqueConstraint().getColumnNames();
             queryBuilder.append(Joiner.on(", ").join(pkColumns));
-            queryBuilder.append(" FROM ").append(fkTable.getName());
+            queryBuilder.append(" FROM ").append(adapter.qualifiedTableName(fkTable));
             queryBuilder.append(" WHERE ").append(Joiner.on(" AND ").join(expressions));
 
             this.fkTable = fkTable;
