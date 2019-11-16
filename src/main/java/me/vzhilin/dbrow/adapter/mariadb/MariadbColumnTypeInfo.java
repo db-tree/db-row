@@ -62,6 +62,10 @@ public class MariadbColumnTypeInfo implements ColumnTypeInfo {
 
     @Override
     public ColumnTypeDescription getType(String type) {
-        return columnTypes.get(type.toLowerCase());
+        ColumnTypeDescription desc = columnTypes.get(type.toLowerCase());
+        if (desc == null) {
+            return new ColumnTypeDescription("unknown", ColumnType.UNKNOWN);
+        }
+        return desc;
     }
 }

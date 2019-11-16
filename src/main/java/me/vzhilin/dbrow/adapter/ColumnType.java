@@ -9,5 +9,5 @@ public enum ColumnType {
     ENUM,
     DATE,
     INTERVAL,
-    BOOLEAN;
+    BOOLEAN, UNKNOWN;
 }
