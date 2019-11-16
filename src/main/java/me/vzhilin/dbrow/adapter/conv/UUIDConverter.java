@@ -8,11 +8,16 @@ public final class UUIDConverter implements Converter {
     public static final Converter INSTANCE = new UUIDConverter();
 
     @Override
-    public Object conv(String text) {
+    public Object fromString(String text) {
         try {
             return UUID.fromString(text);
         } catch (IllegalArgumentException ex) {
             return null;
         }
+    }
+
+    @Override
+    public String toString(Object o) {
+        return String.valueOf(o);
     }
 }

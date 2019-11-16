@@ -105,6 +105,14 @@ public final class ColumnTypeDescription {
         this.attributes = attributes;
     }
 
+    public Converter getConv() {
+        return conv;
+    }
+
+    public void setConv(Converter conv) {
+        this.conv = conv;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -116,9 +124,5 @@ public final class ColumnTypeDescription {
     @Override
     public int hashCode() {
         return Objects.hash(name);
-    }
-
-    public void setConv(Converter conv) {
-        this.conv = conv;
     }
 }

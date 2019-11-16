@@ -27,6 +27,6 @@ public final class OracleValueConverter implements ValueConverter {
 
     @Override
     public Object fromString(String text, String dataType) {
-        return converters.getOrDefault(dataType, NeverConverter.INSTANCE).conv(text);
+        return converters.getOrDefault(dataType, NeverConverter.INSTANCE).fromString(text);
     }
 }

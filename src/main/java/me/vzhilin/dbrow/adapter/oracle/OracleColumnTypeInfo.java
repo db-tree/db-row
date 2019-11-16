@@ -26,8 +26,8 @@ public class OracleColumnTypeInfo extends BasicColumnTypeInfo {
         addString("CHAR VARYING").setAlias("VARCHAR2").setMandatoryLength();
         addString("CHAR").setHasLength();
         addString("NCHAR").setHasLength();
-        addString("CLOB");
-        addString("NCLOB");
+        addClob("CLOB");
+        addClob("NCLOB");
 
         addByteArray("BLOB");
         addByteArray("BFILE");

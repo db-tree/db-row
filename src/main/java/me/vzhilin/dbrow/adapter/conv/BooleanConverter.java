@@ -6,7 +6,7 @@ public final class BooleanConverter implements Converter {
     public final static BooleanConverter INSTANCE = new BooleanConverter();
 
     @Override
-    public Object conv(String text) {
+    public Object fromString(String text) {
         if ("true".equals(text)) {
             return true;
         }
@@ -15,5 +15,10 @@ public final class BooleanConverter implements Converter {
             return false;
         }
         return null;
+    }
+
+    @Override
+    public String toString(Object o) {
+        return String.valueOf(o);
     }
 }

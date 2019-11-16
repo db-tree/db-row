@@ -1,13 +1,8 @@
 package me.vzhilin.dbrow.adapter;
 
 public enum ColumnType {
-    INTEGER,
-    FLOAT,
-    DECIMAL,
-    BYTE_ARRAY,
-    STRING,
-    ENUM,
-    DATE,
-    INTERVAL,
-    BOOLEAN, UNKNOWN;
+    INTEGER, FLOAT, DECIMAL,
+    BOOLEAN, DATE, STRING,
+    ENUM, INTERVAL, BYTE_ARRAY,
+    BLOB, CLOB, UNKNOWN;
 }

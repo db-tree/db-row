@@ -8,11 +8,16 @@ public final class BigDecimalConverter implements Converter {
     public static final Converter INSTANCE = new BigDecimalConverter();
 
     @Override
-    public Object conv(String text) {
+    public Object fromString(String text) {
         try {
             return new BigDecimal(text);
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    @Override
+    public String toString(Object o) {
+        return String.valueOf(o);
     }
 }

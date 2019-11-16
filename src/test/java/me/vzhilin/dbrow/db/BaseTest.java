@@ -70,6 +70,13 @@ public class BaseTest {
         executeCommands(commands);
     }
 
+    protected void executeCommandsSafely(String commands) {
+        try {
+            executeCommands(commands);
+        } catch (SQLException ex) {
+            // do nothing
+        }
+    }
     protected void executeCommands(String commands) throws SQLException {
         Scanner sc = new Scanner(commands);
         sc.useDelimiter(";");

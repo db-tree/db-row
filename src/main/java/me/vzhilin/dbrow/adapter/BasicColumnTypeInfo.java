@@ -1,9 +1,6 @@
 package me.vzhilin.dbrow.adapter;
 
-import me.vzhilin.dbrow.adapter.conv.BigDecimalConverter;
-import me.vzhilin.dbrow.adapter.conv.LongConverter;
-import me.vzhilin.dbrow.adapter.conv.NeverConverter;
-import me.vzhilin.dbrow.adapter.conv.TextConverter;
+import me.vzhilin.dbrow.adapter.conv.*;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,13 +43,20 @@ public class BasicColumnTypeInfo implements ColumnTypeInfo {
 
     protected ColumnTypeDescription addDate(String name) {
         ColumnTypeDescription desc = new ColumnTypeDescription(name, ColumnType.DATE);
-        desc.setConv(NeverConverter.INSTANCE);
+        desc.setConv(DateConverter.INSTANCE);
         addColumnType(desc);
         return desc;
     }
 
     protected ColumnTypeDescription addByteArray(String name) {
         ColumnTypeDescription desc = new ColumnTypeDescription(name, ColumnType.BYTE_ARRAY);
+        desc.setConv(NeverConverter.INSTANCE);
+        addColumnType(desc);
+        return desc;
+    }
+
+    protected ColumnTypeDescription addClob(String name) {
+        ColumnTypeDescription desc = new ColumnTypeDescription(name, ColumnType.CLOB);
         desc.setConv(NeverConverter.INSTANCE);
         addColumnType(desc);
         return desc;

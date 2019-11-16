@@ -2,12 +2,15 @@ package me.vzhilin.dbrow.adapter.conv;
 
 import me.vzhilin.dbrow.adapter.Converter;
 
-public final class NeverConverter implements Converter {
-    public final static Converter INSTANCE = new NeverConverter();
+import java.time.Instant;
+import java.util.Date;
+
+public final class DateConverter implements Converter  {
+    public static final Converter INSTANCE = new DateConverter();
 
     @Override
     public Object fromString(String text) {
-        return null;
+        return Date.from(Instant.parse(text));
     }
 
     @Override

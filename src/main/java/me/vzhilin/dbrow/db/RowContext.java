@@ -1,11 +1,13 @@
 package me.vzhilin.dbrow.db;
 
 import com.google.common.base.Joiner;
+import me.vzhilin.dbrow.adapter.ColumnType;
+import me.vzhilin.dbrow.adapter.ColumnTypeDescription;
+import me.vzhilin.dbrow.adapter.ColumnTypeInfo;
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
 import me.vzhilin.dbrow.catalog.*;
 import me.vzhilin.dbrow.util.BiMap;
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 
 import java.io.Closeable;
@@ -19,6 +21,17 @@ public final class RowContext {
     private final Catalog catalog;
 
     private final Map<String, Object> attributes = new LinkedHashMap<>();
+    private final Set<Object> acceptableTypes;
+
+    {
+        acceptableTypes = new HashSet<>();
+        acceptableTypes.add(ColumnType.INTEGER);
+        acceptableTypes.add(ColumnType.FLOAT);
+        acceptableTypes.add(ColumnType.DECIMAL);
+        acceptableTypes.add(ColumnType.BOOLEAN);
+        acceptableTypes.add(ColumnType.DATE);
+        acceptableTypes.add(ColumnType.STRING);
+    }
 
     public RowContext(Catalog catalog, DatabaseAdapter adapter, Connection connection, QueryRunner runner) {
         this.catalog = catalog;
@@ -37,7 +50,10 @@ public final class RowContext {
 
     public Map<Column, Object> fetchValues(ObjectKey key) {
         Table table = key.getTable();
-        String columns = Joiner.on(',').join(table.getColumns().keySet());
+
+        Set<String> columnNames = table.getColumns().keySet();
+        String columns = Joiner.on(',').join(columnNames); // todo escape?
+
         StringBuilder sb = new StringBuilder("SELECT ");
         sb.append(columns).append(" FROM ");
 
@@ -56,16 +72,40 @@ public final class RowContext {
         });
 
         sb.append(Joiner.on(" AND ").join(parts));
-        Map<String, Object> rawResult;
-        try {
-            rawResult = runner.query(connection, sb.toString(), new MapHandler(), params.toArray());
+        ColumnTypeInfo info = adapter.getInfo();
+
+        Map<Column, Object> result = new LinkedHashMap<>();
+        try (PreparedStatement st = connection.prepareStatement(sb.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                st.setObject(i+1, params.get(i));
+            }
+
+            try (ResultSet rs = st.executeQuery()) {
+                while (rs.next()) {
+                    int index = 0;
+                    for (String columnName: columnNames) {
+                        ++index;
+
+                        Column column = table.getColumn(columnName);
+                        String columnType = column.getDataType();
+
+                        ColumnTypeDescription type = info.getType(columnType);
+                        if (isAcceptable(type.getType())) {
+                            result.put(column, rs.getObject(index));
+                        } else {
+                            result.put(column,"[" + columnType + "]");
+                        }
+                    }
+                }
+            }
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
-
-        Map<Column, Object> result = new LinkedHashMap<>(rawResult.size());
-        rawResult.forEach((name, o) -> result.put(table.getColumn(name), o));
         return result;
+    }
+
+    private boolean isAcceptable(ColumnType type) {
+        return acceptableTypes.contains(type);
     }
 
     public Number backReferencesCount(Row row, ForeignKey foreignKey) {
