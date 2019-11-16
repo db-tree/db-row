@@ -20,7 +20,7 @@ public class MariadbColumnTypeInfo implements ColumnTypeInfo {
         addColumnType(new ColumnTypeDescription("bit", "bit",ColumnType.INTEGER, true));
         addColumnType(new ColumnTypeDescription("binary","binary", ColumnType.BYTE_ARRAY, true));
         ColumnTypeDescription varbinary = new ColumnTypeDescription("varbinary", "varbinary", ColumnType.BYTE_ARRAY, true);
-        varbinary.setMandatoryLength(true);
+        varbinary.setMandatoryLength();
         addColumnType(varbinary);
 
         for (String t: new String[]{"smallint", "tinyint", "mediumint", "int", "bigint"}) {
@@ -39,7 +39,7 @@ public class MariadbColumnTypeInfo implements ColumnTypeInfo {
 
         addColumnType(new ColumnTypeDescription("char","char", ColumnType.STRING, true));
         ColumnTypeDescription varcharDesc = new ColumnTypeDescription("varchar", "varchar", ColumnType.STRING, true);
-        varcharDesc.setMandatoryLength(true);
+        varcharDesc.setMandatoryLength();
         addColumnType(varcharDesc);
 
         for (String t: new String[]{ "tinytext", "longtext"}) {

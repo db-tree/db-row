@@ -6,13 +6,19 @@ import java.util.Set;
 
 public final class ColumnTypeDescription {
     private final String name;
-    private final String alias;
-
     private final ColumnType type;
-    private final boolean hasLength;
-    private final boolean hasPrecision;
-    private final Set<String> attributes;
+    private String alias;
+
+    private boolean hasLength;
+    private boolean hasPrecision;
+    private Set<String> attributes;
     private boolean mandatoryLength;
+
+    public ColumnTypeDescription(String name, ColumnType type) {
+        this.name = name;
+        this.type = type;
+        this.alias = name;
+    }
 
     public ColumnTypeDescription(String name, String alias, ColumnType type) {
         this(name, alias, type, false);
@@ -59,6 +65,41 @@ public final class ColumnTypeDescription {
         return attributes;
     }
 
+    public ColumnTypeDescription setMandatoryLength() {
+        this.hasLength = true;
+        this.mandatoryLength = true;
+        return this;
+    }
+
+    public boolean hasMandatoryLength() {
+        return mandatoryLength;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
+    public boolean isHasLength() {
+        return hasLength;
+    }
+
+    public ColumnTypeDescription setHasLength() {
+        this.hasLength = true;
+        return this;
+    }
+
+    public boolean isHasPrecision() {
+        return hasPrecision;
+    }
+
+    public void setHasPrecision() {
+        this.hasPrecision = true;
+    }
+
+    public void setAttributes(Set<String> attributes) {
+        this.attributes = attributes;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -70,13 +111,5 @@ public final class ColumnTypeDescription {
     @Override
     public int hashCode() {
         return Objects.hash(name);
-    }
-
-    public void setMandatoryLength(boolean mandatoryLength) {
-        this.mandatoryLength = mandatoryLength;
-    }
-
-    public boolean isMandatoryLength() {
-        return mandatoryLength;
     }
 }

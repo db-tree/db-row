@@ -14,6 +14,7 @@ import java.sql.SQLException;
 
 public class OracleDatabaseAdapter implements DatabaseAdapter {
     private final OracleValueConverter conv;
+    private final ColumnTypeInfo info = new OracleColumnTypeInfo();
 
     public OracleDatabaseAdapter() {
         this.conv = new OracleValueConverter();
@@ -68,7 +69,7 @@ public class OracleDatabaseAdapter implements DatabaseAdapter {
 
     @Override
     public ColumnTypeInfo getInfo() {
-        return null;
+        return info;
     }
 
     @Override
