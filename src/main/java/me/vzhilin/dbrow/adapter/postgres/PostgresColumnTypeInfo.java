@@ -18,6 +18,11 @@ public class PostgresColumnTypeInfo implements ColumnTypeInfo {
         addBinaryTypes();
         addDatetimeTypes();
         addBooleanType();
+        addUUIDType();
+    }
+
+    private void addUUIDType() {
+        addColumnType(new ColumnTypeDescription("uuid", ColumnType.STRING));
     }
 
     private void addNumericTypes() {

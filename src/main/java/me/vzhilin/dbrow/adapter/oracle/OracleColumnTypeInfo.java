@@ -15,12 +15,21 @@ public class OracleColumnTypeInfo implements ColumnTypeInfo {
         addColumnType(new ColumnTypeDescription("VARCHAR2", ColumnType.STRING).setMandatoryLength());
         addColumnType(new ColumnTypeDescription("NVARCHAR2", ColumnType.STRING).setMandatoryLength());
 
+        addColumnType(new ColumnTypeDescription("CHARACTER VARYING", ColumnType.STRING).setAlias("VARCHAR2").setMandatoryLength());
+        addColumnType(new ColumnTypeDescription("CHAR VARYING", ColumnType.STRING).setAlias("VARCHAR2").setMandatoryLength());
+
         ColumnTypeDescription number = new ColumnTypeDescription("NUMBER", ColumnType.DECIMAL);
         number.setHasLength();
         number.setHasPrecision();
         addColumnType(number);
 
+        addColumnType(new ColumnTypeDescription("INTEGER", ColumnType.INTEGER).setAlias("NUMBER"));
+        addColumnType(new ColumnTypeDescription("INT", ColumnType.INTEGER).setAlias("NUMBER"));
+        addColumnType(new ColumnTypeDescription("SMALLINT", ColumnType.INTEGER).setAlias("NUMBER"));
         addColumnType(new ColumnTypeDescription("FLOAT", ColumnType.FLOAT).setHasLength());
+        addColumnType(new ColumnTypeDescription("REAL", ColumnType.FLOAT).setAlias("FLOAT"));
+        addColumnType(new ColumnTypeDescription("DOUBLE PRECISION", ColumnType.FLOAT).setAlias("FLOAT"));
+
         addColumnType(new ColumnTypeDescription("BINARY_FLOAT", ColumnType.FLOAT));
         addColumnType(new ColumnTypeDescription("BINARY_DOUBLE",ColumnType.FLOAT));
         addColumnType(new ColumnTypeDescription("DATE", ColumnType.DATE));
