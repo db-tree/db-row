@@ -75,8 +75,9 @@ public final class ColumnTypeDescription {
         return mandatoryLength;
     }
 
-    public void setAlias(String alias) {
+    public ColumnTypeDescription setAlias(String alias) {
         this.alias = alias;
+        return this;
     }
 
     public boolean isHasLength() {
@@ -92,8 +93,9 @@ public final class ColumnTypeDescription {
         return hasPrecision;
     }
 
-    public void setHasPrecision() {
+    public ColumnTypeDescription setHasPrecision() {
         this.hasPrecision = true;
+        return this;
     }
 
     public void setAttributes(Set<String> attributes) {

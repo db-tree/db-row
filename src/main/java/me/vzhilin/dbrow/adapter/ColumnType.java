@@ -7,5 +7,7 @@ public enum ColumnType {
     BYTE_ARRAY,
     STRING,
     ENUM,
-    DATE;
+    DATE,
+    INTERVAL,
+    BOOLEAN;
 }

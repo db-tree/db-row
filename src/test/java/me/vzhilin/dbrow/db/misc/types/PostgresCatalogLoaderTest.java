@@ -1,4 +1,4 @@
-package me.vzhilin.dbrow.db.misc.mariadb;
+package me.vzhilin.dbrow.db.misc.types;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -9,7 +9,7 @@ import me.vzhilin.dbrow.catalog.Table;
 import me.vzhilin.dbrow.catalog.TableId;
 import me.vzhilin.dbrow.db.BaseTest;
 import me.vzhilin.dbrow.db.catalog.CatalogTestEnvironment;
-import me.vzhilin.dbrow.db.env.OracleTestEnvironment;
+import me.vzhilin.dbrow.db.env.PostgresTestEnvironment;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public final class OracleCatalogLoaderTest extends BaseTest {
+public final class PostgresCatalogLoaderTest extends BaseTest {
     @Override
     protected List<TableId> usedTables() {
         return Collections.singletonList(new TableId(currentSchema, s("x")));
@@ -29,8 +29,8 @@ public final class OracleCatalogLoaderTest extends BaseTest {
 
     @Test
     public void checkIfAbleLoadSupportedColumns() throws SQLException {
-        CatalogTestEnvironment oracle = new OracleTestEnvironment();
-        setupEnv(oracle);
+        CatalogTestEnvironment postgres = new PostgresTestEnvironment();
+        setupEnv(postgres);
 
         cleanup();
 
@@ -43,17 +43,17 @@ public final class OracleCatalogLoaderTest extends BaseTest {
             }
 
             if (!ctd.hasMandatoryLength()) {
-                String cn = String.format("A%02d", n++);
+                String cn = String.format("a%02d", n++);
                 entries.put(cn, new CheckEntry(cn + " " + name, ctd.getAlias()));
             }
 
             if (ctd.hasLength()) {
-                String cn = String.format("A%02d", n++);
+                String cn = String.format("a%02d", n++);
                 entries.put(cn, new CheckEntry(cn + " " + name + " (4)", ctd.getAlias(), 4));
             }
 
             if (ctd.hasPrecision()) {
-                String cn = String.format("A%02d", n++);
+                String cn = String.format("a%02d", n++);
                 entries.put(cn, new CheckEntry(cn + " " + name + " (4, 2)", ctd.getAlias(), 4, 2));
             }
         }
@@ -66,17 +66,8 @@ public final class OracleCatalogLoaderTest extends BaseTest {
         Table xTable = catalog.getSchema(s(currentSchema)).getTable(s("X"));
         for (Column c: xTable.getColumns().values()) {
             CheckEntry e = entries.get(c.getName());
-
-            assertEquals(e.getAlias(),  c.getDataType());
-//            if (e.getLength() != null) {
-//                assertEquals(e.getLength(), c.getLength());
-//            }
-
-//            if (e.getPrecision() != null) {
-//                assertEquals(e.getPrecision(), c.getPrecision());
-//            }
+            assertEquals(e.getAlias(), c.getDataType());
         }
-
         cleanup();
     }
 

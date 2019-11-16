@@ -14,6 +14,7 @@ import java.sql.SQLException;
 
 public final class PostgresqlAdapter implements DatabaseAdapter {
     private final ValueConverter conv;
+    private final ColumnTypeInfo info = new PostgresColumnTypeInfo();
 
     public PostgresqlAdapter() {
         this.conv = new PostgresqlValueConverter();
@@ -68,7 +69,7 @@ public final class PostgresqlAdapter implements DatabaseAdapter {
 
     @Override
     public ColumnTypeInfo getInfo() {
-        return null;
+        return info;
     }
 
     @Override
