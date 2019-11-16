@@ -1,16 +1,12 @@
 package me.vzhilin.dbrow.adapter.postgres;
 
+import me.vzhilin.dbrow.adapter.BasicColumnTypeInfo;
 import me.vzhilin.dbrow.adapter.ColumnType;
 import me.vzhilin.dbrow.adapter.ColumnTypeDescription;
-import me.vzhilin.dbrow.adapter.ColumnTypeInfo;
+import me.vzhilin.dbrow.adapter.conv.BooleanConverter;
+import me.vzhilin.dbrow.adapter.conv.UUIDConverter;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-public class PostgresColumnTypeInfo implements ColumnTypeInfo {
-    private final Map<String, ColumnTypeDescription> columnTypes = new HashMap<>();
-
+public final class PostgresColumnTypeInfo extends BasicColumnTypeInfo {
     public PostgresColumnTypeInfo() {
         addNumericTypes();
         addMonetaryTypes();
@@ -22,24 +18,23 @@ public class PostgresColumnTypeInfo implements ColumnTypeInfo {
     }
 
     private void addUUIDType() {
-        addColumnType(new ColumnTypeDescription("uuid", ColumnType.STRING));
+        ColumnTypeDescription uuid = new ColumnTypeDescription("uuid", ColumnType.STRING);
+        uuid.setConv(UUIDConverter.INSTANCE);
+        addColumnType(uuid);
     }
 
     private void addNumericTypes() {
-        addColumnType(new ColumnTypeDescription("smallint", ColumnType.INTEGER).setAlias("int2"));
-        addColumnType(new ColumnTypeDescription("integer", ColumnType.INTEGER).setAlias("int4"));
-        addColumnType(new ColumnTypeDescription("bigint", ColumnType.INTEGER).setAlias("int8"));
+        addInteger("smallint").setAlias("int2");
+        addInteger("integer").setAlias("int4");
+        addInteger("bigint").setAlias("int8");
+        addInteger("smallserial").setAlias("int2");
+        addInteger("serial");
+        addInteger("bigserial");
 
-        addColumnType(new ColumnTypeDescription("decimal", ColumnType.DECIMAL).setAlias("numeric"));
-
-        addColumnType(new ColumnTypeDescription("real", ColumnType.FLOAT).setAlias("float4"));
-        addColumnType(new ColumnTypeDescription("double precision", ColumnType.FLOAT).setAlias("float8"));
-
-        addColumnType(new ColumnTypeDescription("smallserial", ColumnType.INTEGER).setAlias("int2"));
-        addColumnType(new ColumnTypeDescription("serial", ColumnType.INTEGER));
-        addColumnType(new ColumnTypeDescription("bigserial", ColumnType.INTEGER));
-
-        addColumnType(new ColumnTypeDescription("numeric", ColumnType.DECIMAL).setHasLength().setHasPrecision());
+        addDecimal("decimal").setAlias("numeric");
+        addFloat("real").setAlias("float4");
+        addFloat("double precision").setAlias("float8");
+        addDecimal("numeric").setHasLength().setHasPrecision();
     }
 
     private void addMonetaryTypes() {
@@ -47,11 +42,11 @@ public class PostgresColumnTypeInfo implements ColumnTypeInfo {
     }
 
     private void addCharacterTypes() {
-        addColumnType(new ColumnTypeDescription("character varying", ColumnType.STRING).setAlias("varchar").setMandatoryLength());
-        addColumnType(new ColumnTypeDescription("varchar", ColumnType.STRING).setMandatoryLength());
-        addColumnType(new ColumnTypeDescription("character", ColumnType.STRING).setAlias("bpchar").setMandatoryLength());
-        addColumnType(new ColumnTypeDescription("char", ColumnType.STRING).setAlias("bpchar").setMandatoryLength());
-        addColumnType(new ColumnTypeDescription("text", ColumnType.STRING));
+        addString("character varying").setAlias("varchar").setMandatoryLength();
+        addString("varchar").setMandatoryLength();
+        addString("character").setAlias("bpchar").setMandatoryLength();
+        addString("char").setAlias("bpchar").setMandatoryLength();
+        addString("text");
     }
 
     private void addBinaryTypes() {
@@ -59,33 +54,17 @@ public class PostgresColumnTypeInfo implements ColumnTypeInfo {
     }
 
     private void addDatetimeTypes() {
-        addColumnType(new ColumnTypeDescription("timestamp", ColumnType.DATE).setHasLength());
-        addColumnType(new ColumnTypeDescription("timestamp with time zone", ColumnType.DATE).setAlias("timestamptz"));
-        addColumnType(new ColumnTypeDescription("date", ColumnType.DATE));
-        addColumnType(new ColumnTypeDescription("time", ColumnType.DATE).setHasLength());
-        addColumnType(new ColumnTypeDescription("time with time zone", ColumnType.DATE).setAlias("timetz"));
+        addDate("timestamp").setHasLength();
+        addDate("timestamp with time zone").setAlias("timestamptz");
+        addDate("date");
+        addDate("time").setHasLength();
+        addDate("time with time zone").setAlias("timetz");
         addColumnType(new ColumnTypeDescription("interval", ColumnType.INTERVAL).setHasLength());
     }
 
     private void addBooleanType() {
-        addColumnType(new ColumnTypeDescription("boolean", ColumnType.BOOLEAN).setAlias("bool"));
-    }
-
-    private void addColumnType(ColumnTypeDescription description) {
-        columnTypes.put(description.getName().toLowerCase(), description);
-    }
-
-    @Override
-    public ColumnTypeDescription getType(String type) {
-        ColumnTypeDescription desc = columnTypes.get(type.toLowerCase());
-        if (desc == null) {
-            return new ColumnTypeDescription("unknown", ColumnType.UNKNOWN);
-        }
-        return desc;
-    }
-
-    @Override
-    public Map<String, ColumnTypeDescription> getColumnTypes() {
-        return Collections.unmodifiableMap(columnTypes);
+        ColumnTypeDescription bool = new ColumnTypeDescription("boolean", ColumnType.BOOLEAN);
+        bool.setConv(BooleanConverter.INSTANCE);
+        addColumnType(bool.setAlias("bool"));
     }
 }

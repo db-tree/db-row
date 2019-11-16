@@ -1,5 +1,7 @@
 package me.vzhilin.dbrow.adapter;
 
+import me.vzhilin.dbrow.adapter.conv.NeverConverter;
+
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
@@ -13,6 +15,7 @@ public final class ColumnTypeDescription {
     private boolean hasPrecision;
     private Set<String> attributes;
     private boolean mandatoryLength;
+    private Converter conv = NeverConverter.INSTANCE;
 
     public ColumnTypeDescription(String name, ColumnType type) {
         this.name = name;
@@ -113,5 +116,9 @@ public final class ColumnTypeDescription {
     @Override
     public int hashCode() {
         return Objects.hash(name);
+    }
+
+    public void setConv(Converter conv) {
+        this.conv = conv;
     }
 }
