@@ -1,65 +1,37 @@
 package me.vzhilin.dbrow.adapter.oracle;
 
-import me.vzhilin.dbrow.adapter.ColumnType;
-import me.vzhilin.dbrow.adapter.ColumnTypeDescription;
-import me.vzhilin.dbrow.adapter.ColumnTypeInfo;
+import me.vzhilin.dbrow.adapter.BasicColumnTypeInfo;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-public class OracleColumnTypeInfo implements ColumnTypeInfo {
-    private final Map<String, ColumnTypeDescription> columnTypes = new HashMap<>();
-
+public class OracleColumnTypeInfo extends BasicColumnTypeInfo {
     public OracleColumnTypeInfo() {
-        addColumnType(new ColumnTypeDescription("VARCHAR2", ColumnType.STRING).setMandatoryLength());
-        addColumnType(new ColumnTypeDescription("NVARCHAR2", ColumnType.STRING).setMandatoryLength());
+        addDecimal("NUMBER").setHasLength().setHasPrecision();
 
-        addColumnType(new ColumnTypeDescription("CHARACTER VARYING", ColumnType.STRING).setAlias("VARCHAR2").setMandatoryLength());
-        addColumnType(new ColumnTypeDescription("CHAR VARYING", ColumnType.STRING).setAlias("VARCHAR2").setMandatoryLength());
+        addInteger("INTEGER").setAlias("NUMBER");
+        addInteger("INT").setAlias("NUMBER");
+        addInteger("SMALLINT").setAlias("NUMBER");
 
-        ColumnTypeDescription number = new ColumnTypeDescription("NUMBER", ColumnType.DECIMAL);
-        number.setHasLength();
-        number.setHasPrecision();
-        addColumnType(number);
+        addFloat("FLOAT").setHasLength();
+        addFloat("REAL").setAlias("FLOAT");
 
-        addColumnType(new ColumnTypeDescription("INTEGER", ColumnType.INTEGER).setAlias("NUMBER"));
-        addColumnType(new ColumnTypeDescription("INT", ColumnType.INTEGER).setAlias("NUMBER"));
-        addColumnType(new ColumnTypeDescription("SMALLINT", ColumnType.INTEGER).setAlias("NUMBER"));
-        addColumnType(new ColumnTypeDescription("FLOAT", ColumnType.FLOAT).setHasLength());
-        addColumnType(new ColumnTypeDescription("REAL", ColumnType.FLOAT).setAlias("FLOAT"));
-        addColumnType(new ColumnTypeDescription("DOUBLE PRECISION", ColumnType.FLOAT).setAlias("FLOAT"));
+        addFloat("DOUBLE PRECISION").setAlias("FLOAT");
+        addFloat("BINARY_FLOAT");
+        addFloat("BINARY_DOUBLE");
 
-        addColumnType(new ColumnTypeDescription("BINARY_FLOAT", ColumnType.FLOAT));
-        addColumnType(new ColumnTypeDescription("BINARY_DOUBLE",ColumnType.FLOAT));
-        addColumnType(new ColumnTypeDescription("DATE", ColumnType.DATE));
-        addColumnType(new ColumnTypeDescription("TIMESTAMP", ColumnType.DATE).setHasLength());
-        addColumnType(new ColumnTypeDescription("RAW", ColumnType.BYTE_ARRAY).setMandatoryLength());
-        addColumnType(new ColumnTypeDescription("LONG RAW", ColumnType.BYTE_ARRAY));
-        addColumnType(new ColumnTypeDescription("CHAR",  ColumnType.STRING).setHasLength());
-        addColumnType(new ColumnTypeDescription("NCHAR", ColumnType.STRING).setHasLength());
-        addColumnType(new ColumnTypeDescription("CLOB", ColumnType.STRING));
-        addColumnType(new ColumnTypeDescription("NCLOB", ColumnType.STRING));
-        addColumnType(new ColumnTypeDescription("BLOB", ColumnType.BYTE_ARRAY));
-        addColumnType(new ColumnTypeDescription("BFILE",ColumnType.BYTE_ARRAY));
+        addDate("DATE");
+        addDate("TIMESTAMP").setHasLength();
 
-    }
+        addString("VARCHAR2").setMandatoryLength();
+        addString("NVARCHAR2").setMandatoryLength();
+        addString("CHARACTER VARYING").setAlias("VARCHAR2").setMandatoryLength();
+        addString("CHAR VARYING").setAlias("VARCHAR2").setMandatoryLength();
+        addString("CHAR").setHasLength();
+        addString("NCHAR").setHasLength();
+        addString("CLOB");
+        addString("NCLOB");
 
-    private void addColumnType(ColumnTypeDescription description) {
-        columnTypes.put(description.getName().toLowerCase(), description);
-    }
-
-    @Override
-    public ColumnTypeDescription getType(String type) {
-        ColumnTypeDescription desc = columnTypes.get(type.toLowerCase());
-        if (desc == null) {
-            return new ColumnTypeDescription("unknown", ColumnType.UNKNOWN);
-        }
-        return desc;
-    }
-
-    @Override
-    public Map<String, ColumnTypeDescription> getColumnTypes() {
-        return Collections.unmodifiableMap(columnTypes);
+        addByteArray("BLOB");
+        addByteArray("BFILE");
+        addByteArray("RAW").setMandatoryLength();
+        addByteArray("LONG RAW");
     }
 }

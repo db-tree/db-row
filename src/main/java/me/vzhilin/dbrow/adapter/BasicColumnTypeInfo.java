@@ -19,30 +19,42 @@ public class BasicColumnTypeInfo implements ColumnTypeInfo {
     protected ColumnTypeDescription addDecimal(String name) {
         ColumnTypeDescription desc = new ColumnTypeDescription(name, ColumnType.DECIMAL);
         desc.setConv(BigDecimalConverter.INSTANCE);
+        addColumnType(desc);
         return desc;
     }
 
     protected ColumnTypeDescription addFloat(String name) {
         ColumnTypeDescription desc = new ColumnTypeDescription(name, ColumnType.FLOAT);
         desc.setConv(BigDecimalConverter.INSTANCE); // FIXME DOUBLE
+        addColumnType(desc);
         return desc;
     }
 
     protected ColumnTypeDescription addInteger(String name) {
         ColumnTypeDescription desc = new ColumnTypeDescription(name, ColumnType.INTEGER);
         desc.setConv(LongConverter.INSTANCE);
+        addColumnType(desc);
         return desc;
     }
 
     protected ColumnTypeDescription addString(String name) {
         ColumnTypeDescription desc = new ColumnTypeDescription(name, ColumnType.STRING);
         desc.setConv(TextConverter.INSTANCE);
+        addColumnType(desc);
         return desc;
     }
 
     protected ColumnTypeDescription addDate(String name) {
         ColumnTypeDescription desc = new ColumnTypeDescription(name, ColumnType.DATE);
         desc.setConv(NeverConverter.INSTANCE);
+        addColumnType(desc);
+        return desc;
+    }
+
+    protected ColumnTypeDescription addByteArray(String name) {
+        ColumnTypeDescription desc = new ColumnTypeDescription(name, ColumnType.BYTE_ARRAY);
+        desc.setConv(NeverConverter.INSTANCE);
+        addColumnType(desc);
         return desc;
     }
 
