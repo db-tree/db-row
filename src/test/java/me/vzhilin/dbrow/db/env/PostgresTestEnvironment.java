@@ -8,7 +8,7 @@ public final class PostgresTestEnvironment extends CatalogTestEnvironment {
         setDriverClassName("org.postgresql.Driver");
         setUsername("dbrow");
         setPassword("dbrow");
-        setJdbcUrl("jdbc:postgresql://localhost:5432/dbrow?autoReconnect=true");
+        setJdbcUrl("jdbc:postgresql://localhost:5432/dbrow");
         setAdapter(new PostgresqlAdapter());
     }
 }
