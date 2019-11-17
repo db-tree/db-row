@@ -10,14 +10,14 @@ public class MariadbTestDatabaseAdapter extends TestDatabaseAdapter {
     @Override
     protected void doCreateUser(String user, String password) {
         exec("create database `" + user + "`");
-        exec("create user " + user + "@'%' IDENTIFIED BY " + password);
+        exec("create user '" + user + "'@'%' IDENTIFIED BY '" + password + "'");
         exec("GRANT ALL ON *.* TO " + "'" + user + "'" + "@'%' IDENTIFIED BY '" + password + "'");
         exec("FLUSH PRIVILEGES");
     }
 
     @Override
     protected void dropUser(String user) {
-        exec("drop user " + user);
+        exec("drop user `" + user + "`");
         exec("drop database `" + user + "`");
     }
 }

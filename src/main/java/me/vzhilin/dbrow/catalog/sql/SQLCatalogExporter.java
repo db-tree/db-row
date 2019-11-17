@@ -3,13 +3,14 @@ package me.vzhilin.dbrow.catalog.sql;
 import com.google.common.base.Joiner;
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
 import me.vzhilin.dbrow.adapter.mariadb.MariadbDatabaseAdapter;
+import me.vzhilin.dbrow.adapter.oracle.OracleDatabaseAdapter;
 import me.vzhilin.dbrow.adapter.postgres.PostgresqlAdapter;
 import me.vzhilin.dbrow.catalog.*;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -39,6 +40,16 @@ public class SQLCatalogExporter {
                     String t1 = adapter.qualifiedTableName(table);
                     String t2 = adapter.qualifiedTableName(ucTable);
                     String fkName = adapter.qualifiedColumnName(fk.getFkName());
+
+                    if (adapter instanceof OracleDatabaseAdapter) {
+                        if (!Objects.equals(table.getSchemaName(), ucTable.getSchemaName())) {
+                            constraints.add(
+                                String.format("GRANT REFERENCES ON %s TO %s;",
+                                    t2, adapter.qualifiedSchemaName(table.getSchemaName()))
+                            );
+                        }
+                    }
+
                     constraints.add(String.format(
                         "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s);",
                         t1, fkName, fkColumns,
@@ -48,7 +59,6 @@ public class SQLCatalogExporter {
             }
         });
 
-        Collections.sort(constraints);
         out.print(Joiner.on('\n').join(constraints));
     }
 
@@ -101,8 +111,6 @@ public class SQLCatalogExporter {
             }
         });
 
-        Collections.sort(tables);
-        Collections.sort(constraints);
 
         StringBuilder sb = new StringBuilder();
         sb.append(Joiner.on('\n').join(tables));

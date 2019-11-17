@@ -25,7 +25,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public final class RowTests extends BaseTest {
-    private static final String USER = "C##USER01";
+    private static final String USERA = "C##USER_A";
+    private static final String USERB = "C##USER_B";
+    private static final String USERC = "C##USER_C";
     private static final String PW = "USER";
 
     @ParameterizedTest
@@ -34,17 +36,19 @@ public final class RowTests extends BaseTest {
         setupEnv(env);
 
         TestDatabaseAdapter testAdapter = env.getTestAdapter();
-        testAdapter.createUser(USER, PW);
+        testAdapter.createUser(USERA, PW);
+        testAdapter.createUser(USERB, PW);
+        testAdapter.createUser(USERC, PW);
         try {
             DataSource root = testAdapter.getDataSource();
-            DataSource user01 = testAdapter.deriveDatasource(USER, PW);
+            DataSource user01 = testAdapter.deriveDatasource(USERA, PW);
 
             Catalog catalog = getCatalog(env.getNumberColumnType());
-            createTables(user01, catalog);
+            createTables(root, catalog);
 
-            String aTable = adapter.qualifiedTableName(USER, "A");
-            String bTable = adapter.qualifiedTableName(USER, "B");
-            String cTable = adapter.qualifiedTableName(USER, "C");
+            String aTable = adapter.qualifiedTableName(USERA, "A");
+            String bTable = adapter.qualifiedTableName(USERB, "B");
+            String cTable = adapter.qualifiedTableName(USERC, "C");
 
             String a1 = adapter.qualifiedColumnName("A1");
             String a2 = adapter.qualifiedColumnName("A2");
@@ -75,12 +79,11 @@ public final class RowTests extends BaseTest {
                             String.format("INSERT INTO %s(%s, %s, %s) VALUES (103, 201, 412);", aTable, a1, a2, a3)
             );
 
-            Schema schema = catalog.getSchema(USER);
             try (Connection conn = user01.getConnection()) {
                 RowContext ctx = new RowContext(catalog, adapter, conn, new QueryRunner());
-                Table a = schema.getTable("A");
-                Table b = schema.getTable("B");
-                Table c = schema.getTable("C");
+                Table a = catalog.getSchema(USERA).getTable("A");
+                Table b = catalog.getSchema(USERB).getTable("B");
+                Table c = catalog.getSchema(USERC).getTable("C");
 
                 Row a100 = getA(ctx, 100);
                 Row a101 = getA(ctx, 101);
@@ -107,7 +110,7 @@ public final class RowTests extends BaseTest {
 
     private Row getA(RowContext ctx, int a1) {
         Map<UniqueConstraintColumn, Object> key = new HashMap<>();
-        Table aTable = ctx.getCatalog().getSchema(USER).getTable("A");
+        Table aTable = ctx.getCatalog().getSchema(USERA).getTable("A");
         UniqueConstraint ucA = aTable.getAnyUniqueConstraint();
         key.put(ucA.getColumn("A1"), new BigDecimal(a1));
         return new Row(ctx, new ObjectKey(ucA, key));
@@ -115,20 +118,22 @@ public final class RowTests extends BaseTest {
 
     private Catalog getCatalog(String columnType) {
         Catalog catalog = new Catalog();
-        Schema schema = catalog.addSchema(USER);
-        Table aTable = schema.addTable("A");
+        Schema schemaA = catalog.addSchema(USERA);
+        Table aTable = schemaA.addTable("A");
         aTable.addColumn("A1", columnType);
         aTable.addColumn("A2", columnType);
         aTable.addColumn("A3", columnType);
         aTable.addUniqueConstraint("UC_A", new String[]{"A1"});
 
-        Table bTable = schema.addTable("B");
+        Schema schemaB = catalog.addSchema(USERB);
+        Table bTable = schemaB.addTable("B");
         bTable.addColumn("B1", columnType);
         bTable.addColumn("B2", columnType);
         bTable.addColumn("B3", columnType);
         UniqueConstraint ucB = bTable.addUniqueConstraint("UC_B", new String[]{"B1"});
 
-        Table cTable = schema.addTable("C");
+        Schema schemaC = catalog.addSchema(USERC);
+        Table cTable = schemaC.addTable("C");
         cTable.addColumn("C1", columnType);
         cTable.addColumn("C2", columnType);
         cTable.addColumn("C3", columnType);
