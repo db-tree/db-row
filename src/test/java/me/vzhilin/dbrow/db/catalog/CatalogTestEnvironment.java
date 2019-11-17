@@ -1,46 +1,22 @@
 package me.vzhilin.dbrow.db.catalog;
 
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
+import me.vzhilin.dbrow.db.adapter.TestDatabaseAdapter;
+import org.apache.commons.dbcp2.BasicDataSource;
 
 public class CatalogTestEnvironment {
-    private String driverClassName;
-    private String username;
-    private String password;
-    private String jdbcUrl;
+    private BasicDataSource ds;
 
     private String numberColumnType;
     private DatabaseAdapter adapter;
+    private TestDatabaseAdapter testAdapter;
 
-    public String getDriverClassName() {
-        return driverClassName;
+    public TestDatabaseAdapter getTestAdapter() {
+        return testAdapter;
     }
 
-    public void setDriverClassName(String driverClassName) {
-        this.driverClassName = driverClassName;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getJdbcUrl() {
-        return jdbcUrl;
-    }
-
-    public void setJdbcUrl(String jdbcUrl) {
-        this.jdbcUrl = jdbcUrl;
+    public void setTestAdapter(TestDatabaseAdapter testAdapter) {
+        this.testAdapter = testAdapter;
     }
 
     public String getNumberColumnType() {
@@ -59,8 +35,11 @@ public class CatalogTestEnvironment {
         this.adapter = adapter;
     }
 
-    @Override
-    public String toString() {
-        return driverClassName + ": " + jdbcUrl;
+    protected void setDs(BasicDataSource ds) {
+        this.ds = ds;
+    }
+
+    public BasicDataSource getDs() {
+        return ds;
     }
 }

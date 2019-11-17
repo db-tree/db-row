@@ -2,40 +2,40 @@ package me.vzhilin.dbrow.db.catalog;
 
 import me.vzhilin.dbrow.catalog.*;
 import me.vzhilin.dbrow.db.BaseTest;
+import me.vzhilin.dbrow.db.adapter.TestDatabaseAdapter;
 import me.vzhilin.dbrow.util.BiMap;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public final class CatalogTest extends BaseTest {
-    @Override
-    protected List<TableId> usedTables() {
-        TableId b = new TableId(s("C##TEST"), s("B"));
-        TableId a = new TableId(s("C##TEST"), s("A"));
-        return Arrays.asList(b, a);
-    }
-
     @ParameterizedTest
     @ArgumentsSource(CatalogTestArgumentsProvider.class)
     public void testCatalogLoader(CatalogTestEnvironment env) throws SQLException {
         setupEnv(env);
+        TestDatabaseAdapter testAdapter = env.getTestAdapter();
+        try {
+            testAdapter.createUser("C##USER01", "USER");
+            DataSource root = testAdapter.getDataSource();
+            DataSource user01 = testAdapter.deriveDatasource("C##USER01", "USER");
 
-        Catalog sample = prepareCatalog(env.getNumberColumnType());
-        createTables(sample);
+            Catalog sample = prepareCatalog(env.getNumberColumnType());
+            createTables(root, sample);
 
-        Catalog result = loadCatalog(s("C##TEST"));
-        assertEquals(sample, result);
-        cleanup();
+            Catalog result = loadCatalog(user01, "C##USER01");
+            assertEquals(sample, result);
+        } finally {
+            testAdapter.teardown();
+        }
     }
 
     protected Catalog prepareCatalog(String numberType) {
         Catalog catalog = new Catalog();
-        Schema schema = catalog.addSchema(s("C##TEST"));
+        Schema schema = catalog.addSchema("C##USER01");
         Table aTable = schema.addTable(s("A"));
         aTable.addColumn(s("A"), numberType);
         aTable.addColumn(s("B"), numberType);
