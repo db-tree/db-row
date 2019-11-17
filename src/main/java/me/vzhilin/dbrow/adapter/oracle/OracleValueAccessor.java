@@ -13,6 +13,7 @@ public class OracleValueAccessor extends BasicValueAccessor {
             case "BINARY_FLOAT": return getFloat(rs, index);
             case "BINARY_DOUBLE": return getDouble(rs, index);
             case "TIMESTAMP WITH TIME ZONE": return getTimestamp(rs, index);
+            case "TIMESTAMP WITH LOCAL TIME ZONE": return getTimestamp(rs, index);
             default: return super.get(rs, index);
         }
     }

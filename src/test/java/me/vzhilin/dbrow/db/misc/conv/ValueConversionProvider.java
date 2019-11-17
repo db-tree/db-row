@@ -115,6 +115,7 @@ public class ValueConversionProvider implements ArgumentsProvider {
             {"DATE", java.sql.Date.valueOf("1990-03-15"), "1990-03-15 00:00:00.0"},
             {"TIMESTAMP", java.sql.Timestamp.valueOf("1990-03-15 04:05:06"), "1990-03-15 04:05:06.0"},
             {"TIMESTAMP WITH TIME ZONE", java.sql.Timestamp.valueOf("1990-03-15 04:05:06"), "1990-03-15 04:05:06.0"},
+            {"TIMESTAMP WITH LOCAL TIME ZONE", java.sql.Timestamp.valueOf("1990-03-15 04:05:06"), "1990-03-15 04:05:06.0"},
             {"CLOB", "1000", "[CLOB]"},
             {"BLOB", "1000", "[BLOB]"},
 //            {"BFILE", "1000", "[BFILE]"},
