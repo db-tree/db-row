@@ -39,7 +39,6 @@ public final class RowTests extends BaseTest {
             DataSource root = testAdapter.getDataSource();
             DataSource user01 = testAdapter.deriveDatasource(USER, PW);
 
-
             Catalog catalog = getCatalog(env.getNumberColumnType());
             createTables(user01, catalog);
 

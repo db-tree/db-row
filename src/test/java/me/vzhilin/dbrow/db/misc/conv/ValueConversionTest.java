@@ -49,13 +49,10 @@ public final class ValueConversionTest extends BaseTest {
 
                 int rowID = id++;
                 try (Connection conn = user01.getConnection()) {
-                    executeCommands(user01,"create table " + tableName + " (" +
-                            "id " + numericType + ", " +
-                            "v " + dataType + "," +
-                            "CONSTRAINT a_pk PRIMARY KEY (id)" +
-                            ")");
+                    String create = String.format("create table %s (id %s, v %s,CONSTRAINT a_pk PRIMARY KEY (id))", tableName, numericType, dataType);
+                    executeCommands(user01, create);
 
-                    try(PreparedStatement st = conn.prepareStatement("insert into " + tableName + " (id, v) values (?,?)")) {
+                    try(PreparedStatement st = conn.prepareStatement(String.format("insert into %s (id, v) values (?,?)", tableName))) {
                         st.setInt(1, rowID);
                         st.setObject(2, value);
                         st.execute();
