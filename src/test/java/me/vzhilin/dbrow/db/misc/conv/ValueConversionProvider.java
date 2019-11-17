@@ -49,6 +49,7 @@ public class ValueConversionProvider implements ArgumentsProvider {
             {"varchar(10)", "text_5", "text_5"},
             {"boolean", true, "true"},
             {"boolean", false, "false"},
+            {"integer[]", new int[]{1,2,3}, "[ARRAY]"},
             {"date", java.sql.Date.valueOf("1990-03-15"), "1990-03-15"},
             {"json", jsonObject, "{\"tags\":[{\"term\":\"paris\"}, {\"term\":\"food\"}]}"},
             {"uuid", UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"), "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"}
