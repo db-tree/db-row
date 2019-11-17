@@ -25,8 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public final class RowTests extends BaseTest {
-
-    public static final String SCHEMA_NAME = "C##USER01";
+    private static final String USER = "C##USER01";
+    private static final String PW = "USER";
 
     @ParameterizedTest
     @ArgumentsSource(CatalogTestArgumentsProvider.class)
@@ -34,18 +34,18 @@ public final class RowTests extends BaseTest {
         setupEnv(env);
 
         TestDatabaseAdapter testAdapter = env.getTestAdapter();
-        testAdapter.createUser("C##USER01", "USER");
+        testAdapter.createUser(USER, PW);
         try {
             DataSource root = testAdapter.getDataSource();
-            DataSource user01 = testAdapter.deriveDatasource("C##USER01", "USER");
+            DataSource user01 = testAdapter.deriveDatasource(USER, PW);
 
 
             Catalog catalog = getCatalog(env.getNumberColumnType());
             createTables(user01, catalog);
 
-            String aTable = adapter.qualifiedTableName(SCHEMA_NAME, s("A"));
-            String bTable = adapter.qualifiedTableName(SCHEMA_NAME, s("B"));
-            String cTable = adapter.qualifiedTableName(SCHEMA_NAME, s("C"));
+            String aTable = adapter.qualifiedTableName(USER, s("A"));
+            String bTable = adapter.qualifiedTableName(USER, s("B"));
+            String cTable = adapter.qualifiedTableName(USER, s("C"));
 
             executeCommands(user01,
                     String.format("INSERT INTO %s(%s, %s) VALUES (200, 400);", bTable, s("B1"), s("B2")) +
@@ -67,7 +67,7 @@ public final class RowTests extends BaseTest {
                             String.format("INSERT INTO %s(%s, %s, %s) VALUES (103, 201, 412);", aTable, s("A1"), s("A2"), s("A3"))
             );
 
-            Schema schema = catalog.getSchema(SCHEMA_NAME);
+            Schema schema = catalog.getSchema(USER);
             try (Connection conn = user01.getConnection()) {
                 RowContext ctx = new RowContext(catalog, adapter, conn, new QueryRunner());
                 Table a = schema.getTable(s("A"));
@@ -99,7 +99,7 @@ public final class RowTests extends BaseTest {
 
     private Row getA(RowContext ctx, int a1) {
         Map<UniqueConstraintColumn, Object> key = new HashMap<>();
-        Table aTable = ctx.getCatalog().getSchema(SCHEMA_NAME).getTable(s("A"));
+        Table aTable = ctx.getCatalog().getSchema(USER).getTable(s("A"));
         UniqueConstraint ucA = aTable.getAnyUniqueConstraint();
         key.put(ucA.getColumn(s("A1")), new BigDecimal(a1));
         return new Row(ctx, new ObjectKey(ucA, key));
@@ -107,7 +107,7 @@ public final class RowTests extends BaseTest {
 
     private Catalog getCatalog(String columnType) {
         Catalog catalog = new Catalog();
-        Schema schema = catalog.addSchema(SCHEMA_NAME);
+        Schema schema = catalog.addSchema(USER);
         Table aTable = schema.addTable(s("A"));
         aTable.addColumn(s("A1"), columnType);
         aTable.addColumn(s("A2"), columnType);

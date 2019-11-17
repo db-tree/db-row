@@ -23,6 +23,8 @@ import java.sql.SQLException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public final class ValueConversionTest extends BaseTest {
+    private static final String C_USER_01 = "C##USER01";
+    private static final String USER = "USER";
 
     @ParameterizedTest
     @ArgumentsSource(ValueConversionProvider.class)
@@ -30,16 +32,16 @@ public final class ValueConversionTest extends BaseTest {
         setupEnv(env);
 
         TestDatabaseAdapter testAdapter = env.getTestAdapter();
-        testAdapter.createUser("C##USER01", "USER");
+        testAdapter.createUser(C_USER_01, USER);
         try {
             DataSource root = testAdapter.getDataSource();
-            DataSource user01 = testAdapter.deriveDatasource("C##USER01", "USER");
+            DataSource user01 = testAdapter.deriveDatasource(C_USER_01, USER);
 
             ColumnTypeInfo info = adapter.getInfo();
             String numericType = env.getNumberColumnType();
 
             int id = 1;
-            final String tableName = adapter.qualifiedTableName("C##USER01", s("a"));
+            final String tableName = adapter.qualifiedTableName(C_USER_01, s("a"));
             for (Object[] e: expressions) {
                 String dataType = (String) e[0];
                 Object value = e[1];
@@ -59,12 +61,12 @@ public final class ValueConversionTest extends BaseTest {
                         st.execute();
                     }
 
-                    Catalog catalog = loadCatalog(user01, "C##USER01");
-                    UniqueConstraint uc = catalog.getSchema("C##USER01").getTable(s("a")).getAnyUniqueConstraint();
+                    Catalog catalog = loadCatalog(user01, C_USER_01);
+                    UniqueConstraint uc = catalog.getSchema(C_USER_01).getTable(s("a")).getAnyUniqueConstraint();
 
                     RowContext ctx = new RowContext(catalog, adapter, conn, new QueryRunner());
                     Row r = new Row(ctx, new ObjectKeyBuilder(uc).set(s("id"), rowID).build());
-                    Column column = catalog.getSchema("C##USER01").getTable(s("a")).getColumn(s("v"));
+                    Column column = catalog.getSchema(C_USER_01).getTable(s("a")).getColumn(s("v"));
 
                     RowValue rawValue = r.get(column);
                     assertEquals(expectedValue, rawValue.toString());
