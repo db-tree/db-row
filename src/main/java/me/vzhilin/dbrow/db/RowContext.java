@@ -1,5 +1,6 @@
 package me.vzhilin.dbrow.db;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import me.vzhilin.dbrow.adapter.ColumnTypeInfo;
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
@@ -13,6 +14,7 @@ import org.apache.commons.dbutils.handlers.ScalarHandler;
 import java.io.Closeable;
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public final class RowContext {
     private final QueryRunner runner;
@@ -42,8 +44,12 @@ public final class RowContext {
     public Map<Column, RowValue> fetchValues(ObjectKey key) {
         Table table = key.getTable();
 
-        Set<String> columnNames = table.getColumns().keySet();
-        String columns = Joiner.on(',').join(columnNames); // todo escape?
+        Collection<String> columnNames = table.getColumnNames()
+            .stream()
+            .map((Function<String, String>) adapter::qualifiedColumnName)
+            .collect(Collectors.toList());
+
+        String columns = Joiner.on(',').join(columnNames);
 
         StringBuilder sb = new StringBuilder("SELECT ");
         sb.append(columns).append(" FROM ");
@@ -58,7 +64,7 @@ public final class RowContext {
         List<Object> params = new ArrayList<>(primaryKeyColumnCount);
 
         key.forEach((column, value) -> {
-            parts.add(column.getName() + " = ? ");
+            parts.add(adapter.qualifiedColumnName(column.getName()) + " = ? ");
             params.add(value);
         });
 
@@ -74,7 +80,7 @@ public final class RowContext {
             try (ResultSet rs = st.executeQuery()) {
                 while (rs.next()) {
                     int index = 0;
-                    for (String columnName: columnNames) {
+                    for (String columnName: table.getColumnNames()) {
                         ++index;
 
                         Column column = table.getColumn(columnName);
@@ -176,7 +182,7 @@ public final class RowContext {
         List<Object> params = new ArrayList<>(vs.size());
         vs.forEach((pkColumn, value) -> {
             ForeignKeyColumn fkColumn = mapping.get(pkColumn);
-            parts.add(fkColumn.getColumn().getName() + " = ? ");
+            parts.add(adapter.qualifiedColumnName(fkColumn.getColumn().getName()) + " = ? ");
             params.add(value.get());
         });
 
@@ -205,7 +211,7 @@ public final class RowContext {
         List<String> parts = new ArrayList<>(keyColumns.size());
         List<Object> params = new ArrayList<>(keyColumns.size());
         for (UniqueConstraintColumn pkc: keyColumns) {
-            parts.add(pkc.getName() + " = ?");
+            parts.add(adapter.qualifiedColumnName(pkc.getName()) + " = ?");
             params.add(key.getKey().get(pkc));
         }
         query.append(Joiner.on(" AND ").join(parts));
@@ -258,11 +264,18 @@ public final class RowContext {
             params = new ArrayList<>();
             List<String> expressions = new ArrayList<>();
             fk.getColumnMapping().forEach((pkColumn, fkColumn) -> {
-                expressions.add(fkColumn.getColumn().getName() + " = ?");
+                expressions.add(adapter.qualifiedColumnName(fkColumn.getColumn().getName()) + " = ?");
                 params.add(pkRow.get(pkColumn.getColumn()));
             });
 
-            Set<String> pkColumns = fk.getTable().getAnyUniqueConstraint().getColumnNames();
+            List<String> pkColumns =
+                fk.getTable()
+                    .getAnyUniqueConstraint()
+                    .getColumnNames()
+                    .stream()
+                    .map((Function<String, String>) adapter::qualifiedColumnName)
+                    .collect(Collectors.toList());
+
             queryBuilder.append(Joiner.on(", ").join(pkColumns));
             queryBuilder.append(" FROM ").append(adapter.qualifiedTableName(fkTable));
             queryBuilder.append(" WHERE ").append(Joiner.on(" AND ").join(expressions));

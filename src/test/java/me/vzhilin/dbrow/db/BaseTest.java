@@ -1,7 +1,6 @@
 package me.vzhilin.dbrow.db;
 
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
-import me.vzhilin.dbrow.adapter.IdentifierCase;
 import me.vzhilin.dbrow.catalog.Catalog;
 import me.vzhilin.dbrow.catalog.filter.AcceptSchema;
 import me.vzhilin.dbrow.catalog.loader.CatalogLoaderFactory;
@@ -53,20 +52,6 @@ public class BaseTest {
             if (!command.isEmpty()) {
                 runner.update(command);
             }
-        }
-    }
-
-    protected String s(String name) {
-        IdentifierCase cs = adapter.getDefaultCase();
-        switch (cs) {
-            case LOWER:
-                return name.toLowerCase();
-            case UPPER:
-                return name.toUpperCase();
-            case NONE:
-                return name;
-            default:
-                throw new RuntimeException();
         }
     }
 }

@@ -42,47 +42,56 @@ public final class RowTests extends BaseTest {
             Catalog catalog = getCatalog(env.getNumberColumnType());
             createTables(user01, catalog);
 
-            String aTable = adapter.qualifiedTableName(USER, s("A"));
-            String bTable = adapter.qualifiedTableName(USER, s("B"));
-            String cTable = adapter.qualifiedTableName(USER, s("C"));
+            String aTable = adapter.qualifiedTableName(USER, "A");
+            String bTable = adapter.qualifiedTableName(USER, "B");
+            String cTable = adapter.qualifiedTableName(USER, "C");
 
+            String a1 = adapter.qualifiedColumnName("A1");
+            String a2 = adapter.qualifiedColumnName("A2");
+            String a3 = adapter.qualifiedColumnName("A3");
+
+            String b1 = adapter.qualifiedColumnName("B1");
+            String b2 = adapter.qualifiedColumnName("B2");
+
+            String c1 = adapter.qualifiedColumnName("C1");
+            String c2 = adapter.qualifiedColumnName("C2");
             executeCommands(user01,
-                    String.format("INSERT INTO %s(%s, %s) VALUES (200, 400);", bTable, s("B1"), s("B2")) +
-                            String.format("INSERT INTO %s(%s, %s) VALUES (201, 401);", bTable, s("B1"), s("B2")) +
-                            String.format("INSERT INTO %s(%s, %s) VALUES (202, 402);", bTable, s("B1"), s("B2"))
+                    String.format("INSERT INTO %s(%s, %s) VALUES (200, 400);", bTable, b1, b2) +
+                            String.format("INSERT INTO %s(%s, %s) VALUES (201, 401);", bTable, b1, b2) +
+                            String.format("INSERT INTO %s(%s, %s) VALUES (202, 402);", bTable, b1, b2)
             );
 
             executeCommands(user01,
-                    String.format("INSERT INTO %s(%s, %s) VALUES (200, 405);", cTable, s("C1"), s("C2")) +
-                            String.format("INSERT INTO %s(%s, %s) VALUES (201, 406);", cTable, s("C1"), s("C2")) +
-                            String.format("INSERT INTO %s(%s, %s) VALUES (202, 407);", cTable, s("C1"), s("C2")) +
-                            String.format("INSERT INTO %s(%s, %s) VALUES (203, 408);", cTable, s("C1"), s("C2"))
+                    String.format("INSERT INTO %s(%s, %s) VALUES (200, 405);", cTable, c1, c2) +
+                            String.format("INSERT INTO %s(%s, %s) VALUES (201, 406);", cTable, c1, c2) +
+                            String.format("INSERT INTO %s(%s, %s) VALUES (202, 407);", cTable, c1, c2) +
+                            String.format("INSERT INTO %s(%s, %s) VALUES (203, 408);", cTable, c1, c2)
             );
 
             executeCommands(user01,
-                    String.format("INSERT INTO %s(%s, %s, %s) VALUES (100, 200, 409);", aTable, s("A1"), s("A2"), s("A3")) +
-                            String.format("INSERT INTO %s(%s, %s, %s) VALUES (101, 200, 410);", aTable, s("A1"), s("A2"), s("A3")) +
-                            String.format("INSERT INTO %s(%s, %s, %s) VALUES (102, 201, 411);", aTable, s("A1"), s("A2"), s("A3")) +
-                            String.format("INSERT INTO %s(%s, %s, %s) VALUES (103, 201, 412);", aTable, s("A1"), s("A2"), s("A3"))
+                    String.format("INSERT INTO %s(%s, %s, %s) VALUES (100, 200, 409);", aTable, a1, a2, a3) +
+                            String.format("INSERT INTO %s(%s, %s, %s) VALUES (101, 200, 410);", aTable, a1, a2, a3) +
+                            String.format("INSERT INTO %s(%s, %s, %s) VALUES (102, 201, 411);", aTable, a1, a2, a3) +
+                            String.format("INSERT INTO %s(%s, %s, %s) VALUES (103, 201, 412);", aTable, a1, a2, a3)
             );
 
             Schema schema = catalog.getSchema(USER);
             try (Connection conn = user01.getConnection()) {
                 RowContext ctx = new RowContext(catalog, adapter, conn, new QueryRunner());
-                Table a = schema.getTable(s("A"));
-                Table b = schema.getTable(s("B"));
-                Table c = schema.getTable(s("C"));
+                Table a = schema.getTable("A");
+                Table b = schema.getTable("B");
+                Table c = schema.getTable("C");
 
                 Row a100 = getA(ctx, 100);
                 Row a101 = getA(ctx, 101);
 
-                ForeignKey fkB = a.getForeignKey(s("FK_B"));
-                ForeignKey fkC = a.getForeignKey(s("FK_C"));
+                ForeignKey fkB = a.getForeignKey("FK_B");
+                ForeignKey fkC = a.getForeignKey("FK_C");
                 Row b200 = a100.forwardReference(fkB);
                 Row c200 = a100.forwardReference(fkC);
 
-                assertEquals(new BigDecimal(400), b200.get(s("B2")).get());
-                assertEquals(new BigDecimal(405), c200.get(s("C2")).get());
+                assertEquals(new BigDecimal(400), b200.get("B2").get());
+                assertEquals(new BigDecimal(405), c200.get("C2").get());
 
                 Map<UniqueConstraint, Map<ForeignKey, Number>> b200BackReferences = b200.backwardReferencesCount();
                 UniqueConstraint ucB = b.getAnyUniqueConstraint();
@@ -98,41 +107,41 @@ public final class RowTests extends BaseTest {
 
     private Row getA(RowContext ctx, int a1) {
         Map<UniqueConstraintColumn, Object> key = new HashMap<>();
-        Table aTable = ctx.getCatalog().getSchema(USER).getTable(s("A"));
+        Table aTable = ctx.getCatalog().getSchema(USER).getTable("A");
         UniqueConstraint ucA = aTable.getAnyUniqueConstraint();
-        key.put(ucA.getColumn(s("A1")), new BigDecimal(a1));
+        key.put(ucA.getColumn("A1"), new BigDecimal(a1));
         return new Row(ctx, new ObjectKey(ucA, key));
     }
 
     private Catalog getCatalog(String columnType) {
         Catalog catalog = new Catalog();
         Schema schema = catalog.addSchema(USER);
-        Table aTable = schema.addTable(s("A"));
-        aTable.addColumn(s("A1"), columnType);
-        aTable.addColumn(s("A2"), columnType);
-        aTable.addColumn(s("A3"), columnType);
-        aTable.addUniqueConstraint(s("UC_A"), new String[]{s("A1")});
+        Table aTable = schema.addTable("A");
+        aTable.addColumn("A1", columnType);
+        aTable.addColumn("A2", columnType);
+        aTable.addColumn("A3", columnType);
+        aTable.addUniqueConstraint("UC_A", new String[]{"A1"});
 
-        Table bTable = schema.addTable(s("B"));
-        bTable.addColumn(s("B1"), columnType);
-        bTable.addColumn(s("B2"), columnType);
-        bTable.addColumn(s("B3"), columnType);
-        UniqueConstraint ucB = bTable.addUniqueConstraint(s("UC_B"), new String[]{s("B1")});
+        Table bTable = schema.addTable("B");
+        bTable.addColumn("B1", columnType);
+        bTable.addColumn("B2", columnType);
+        bTable.addColumn("B3", columnType);
+        UniqueConstraint ucB = bTable.addUniqueConstraint("UC_B", new String[]{"B1"});
 
-        Table cTable = schema.addTable(s("C"));
-        cTable.addColumn(s("C1"), columnType);
-        cTable.addColumn(s("C2"), columnType);
-        cTable.addColumn(s("C3"), columnType);
-        UniqueConstraint ucC = cTable.addUniqueConstraint(s("UC_C"), new String[]{s("C1")});
+        Table cTable = schema.addTable("C");
+        cTable.addColumn("C1", columnType);
+        cTable.addColumn("C2", columnType);
+        cTable.addColumn("C3", columnType);
+        UniqueConstraint ucC = cTable.addUniqueConstraint("UC_C", new String[]{"C1"});
 
         BiMap<UniqueConstraintColumn, Column> fkB = new BiMap<>();
-        fkB.put(ucB.getColumn(s("B1")), aTable.getColumn(s("A2")));
-        ForeignKey fkbKey = aTable.addForeignKey(s("FK_B"), ucB, fkB);
+        fkB.put(ucB.getColumn("B1"), aTable.getColumn("A2"));
+        ForeignKey fkbKey = aTable.addForeignKey("FK_B", ucB, fkB);
         ucB.addForeignKey(fkbKey);
 
         BiMap<UniqueConstraintColumn, Column> fkC = new BiMap<>();
-        fkC.put(ucC.getColumn(s("C1")), aTable.getColumn(s("A2")));
-        ForeignKey fkcKey = aTable.addForeignKey(s("FK_C"), ucC, fkC);
+        fkC.put(ucC.getColumn("C1"), aTable.getColumn("A2"));
+        ForeignKey fkcKey = aTable.addForeignKey("FK_C", ucC, fkC);
         ucC.addForeignKey(fkcKey);
         return catalog;
     }

@@ -38,9 +38,10 @@ public class SQLCatalogExporter {
                     Table ucTable = uc.getTable();
                     String t1 = adapter.qualifiedTableName(table);
                     String t2 = adapter.qualifiedTableName(ucTable);
+                    String fkName = adapter.qualifiedColumnName(fk.getFkName());
                     constraints.add(String.format(
                         "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s);",
-                        t1, fk.getFkName(), fkColumns,
+                        t1, fkName, fkColumns,
                         t2, ucColumns
                     ));
                 }
@@ -88,8 +89,9 @@ public class SQLCatalogExporter {
                         List<String> qualifiedColumns = uc.getColumnNames().stream().map(adapter::qualifiedColumnName).collect(Collectors.toList());
                         String columns = Joiner.on(',').join(qualifiedColumns);
 
+                        String columnName = adapter.qualifiedColumnName(uc.getName());
                         constraints.add(String.format("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s);",
-                            qualifiedTable, uc.getName(), columns));
+                            qualifiedTable, columnName, columns));
                     }
                 });
 

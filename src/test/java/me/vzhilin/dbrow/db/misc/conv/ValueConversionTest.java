@@ -41,7 +41,7 @@ public final class ValueConversionTest extends BaseTest {
             String numericType = env.getNumberColumnType();
 
             int id = 1;
-            final String tableName = adapter.qualifiedTableName(C_USER_01, s("a"));
+            final String tableName = adapter.qualifiedTableName(C_USER_01, "a");
             for (Object[] e: expressions) {
                 String dataType = (String) e[0];
                 Object value = e[1];
@@ -49,21 +49,30 @@ public final class ValueConversionTest extends BaseTest {
 
                 int rowID = id++;
                 try (Connection conn = user01.getConnection()) {
-                    String create = String.format("create table %s (id %s, v %s,CONSTRAINT a_pk PRIMARY KEY (id))", tableName, numericType, dataType);
+                    String create = String.format("create table %s (%s %s, %s %s,CONSTRAINT %s PRIMARY KEY (%s))",
+                        tableName,
+                        adapter.qualifiedColumnName("id"), numericType,
+                        adapter.qualifiedColumnName("v"), dataType,
+                        adapter.qualifiedColumnName("a_pk"),
+                        adapter.qualifiedColumnName("id")
+                    );
                     executeCommands(user01, create);
 
-                    try(PreparedStatement st = conn.prepareStatement(String.format("insert into %s (id, v) values (?,?)", tableName))) {
+                    try(PreparedStatement st = conn.prepareStatement(String.format("insert into %s (%s, %s) values (?,?)",
+                            tableName,
+                            adapter.qualifiedColumnName("id"),
+                            adapter.qualifiedColumnName("v")))) {
                         st.setInt(1, rowID);
                         st.setObject(2, value);
                         st.execute();
                     }
 
                     Catalog catalog = loadCatalog(user01, C_USER_01);
-                    UniqueConstraint uc = catalog.getSchema(C_USER_01).getTable(s("a")).getAnyUniqueConstraint();
+                    UniqueConstraint uc = catalog.getSchema(C_USER_01).getTable("a").getAnyUniqueConstraint();
 
                     RowContext ctx = new RowContext(catalog, adapter, conn, new QueryRunner());
-                    Row r = new Row(ctx, new ObjectKeyBuilder(uc).set(s("id"), rowID).build());
-                    Column column = catalog.getSchema(C_USER_01).getTable(s("a")).getColumn(s("v"));
+                    Row r = new Row(ctx, new ObjectKeyBuilder(uc).set("id", rowID).build());
+                    Column column = catalog.getSchema(C_USER_01).getTable("a").getColumn("v");
 
                     RowValue rawValue = r.get(column);
                     assertEquals(expectedValue, rawValue.toString());

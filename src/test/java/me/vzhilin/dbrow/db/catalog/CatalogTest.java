@@ -36,27 +36,27 @@ public final class CatalogTest extends BaseTest {
     protected Catalog prepareCatalog(String numberType) {
         Catalog catalog = new Catalog();
         Schema schema = catalog.addSchema("C##USER01");
-        Table aTable = schema.addTable(s("A"));
-        aTable.addColumn(s("A"), numberType);
-        aTable.addColumn(s("B"), numberType);
-        aTable.addColumn(s("C"), numberType);
+        Table aTable = schema.addTable("A");
+        aTable.addColumn("A", numberType);
+        aTable.addColumn("B", numberType);
+        aTable.addColumn("C", numberType);
 
-        UniqueConstraint ucA = aTable.addUniqueConstraint(s("UC_TEST_A"), new String[]{s("A")});
-        UniqueConstraint ucBC = aTable.addUniqueConstraint(s("UC_TEST_BC"), new String[]{s("B"), s("C")});
+        UniqueConstraint ucA = aTable.addUniqueConstraint("UC_TEST_A", new String[]{"A"});
+        UniqueConstraint ucBC = aTable.addUniqueConstraint("UC_TEST_BC", new String[]{"B", "C"});
 
-        Table bTable = schema.addTable(s("B"));
-        bTable.addColumn(s("D"), numberType);
-        bTable.addColumn(s("E"), numberType);
-        bTable.addColumn(s("F"), numberType);
+        Table bTable = schema.addTable("B");
+        bTable.addColumn("D", numberType);
+        bTable.addColumn("E", numberType);
+        bTable.addColumn("F", numberType);
 
         BiMap<UniqueConstraintColumn, Column> fkDMapping = new BiMap<>();
-        fkDMapping.put(ucA.getColumn(s("A")), bTable.getColumn(s("D")));
-        bTable.addForeignKey(s("FK_B_D"), ucA, fkDMapping);
+        fkDMapping.put(ucA.getColumn("A"), bTable.getColumn("D"));
+        bTable.addForeignKey("FK_B_D", ucA, fkDMapping);
 
         BiMap<UniqueConstraintColumn, Column> fkEfMapping = new BiMap<>();
-        fkEfMapping.put(ucBC.getColumn(s("B")), bTable.getColumn(s("E")));
-        fkEfMapping.put(ucBC.getColumn(s("C")), bTable.getColumn(s("F")));
-        bTable.addForeignKey(s("FK_B_EF"), ucBC, fkEfMapping);
+        fkEfMapping.put(ucBC.getColumn("B"), bTable.getColumn("E"));
+        fkEfMapping.put(ucBC.getColumn("C"), bTable.getColumn("F"));
+        bTable.addForeignKey("FK_B_EF", ucBC, fkEfMapping);
         return catalog;
     }
 }
