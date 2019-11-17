@@ -1,10 +1,10 @@
 package me.vzhilin.dbrow.db;
 
 import com.google.common.base.Joiner;
-import me.vzhilin.dbrow.adapter.ColumnType;
-import me.vzhilin.dbrow.adapter.ColumnTypeDescription;
 import me.vzhilin.dbrow.adapter.ColumnTypeInfo;
 import me.vzhilin.dbrow.adapter.DatabaseAdapter;
+import me.vzhilin.dbrow.adapter.RowValue;
+import me.vzhilin.dbrow.adapter.ValueAccessor;
 import me.vzhilin.dbrow.catalog.*;
 import me.vzhilin.dbrow.util.BiMap;
 import org.apache.commons.dbutils.QueryRunner;
@@ -21,23 +21,14 @@ public final class RowContext {
     private final Catalog catalog;
 
     private final Map<String, Object> attributes = new LinkedHashMap<>();
-    private final Set<Object> acceptableTypes;
-
-    {
-        acceptableTypes = new HashSet<>();
-        acceptableTypes.add(ColumnType.INTEGER);
-        acceptableTypes.add(ColumnType.FLOAT);
-        acceptableTypes.add(ColumnType.DECIMAL);
-        acceptableTypes.add(ColumnType.BOOLEAN);
-        acceptableTypes.add(ColumnType.DATE);
-        acceptableTypes.add(ColumnType.STRING);
-    }
+    private final ValueAccessor accessor;
 
     public RowContext(Catalog catalog, DatabaseAdapter adapter, Connection connection, QueryRunner runner) {
         this.catalog = catalog;
         this.adapter = adapter;
         this.connection = connection;
         this.runner = runner;
+        this.accessor = adapter.getAccessor();
     }
 
     public synchronized void setAttribute(String key, Object value) {
@@ -48,7 +39,7 @@ public final class RowContext {
         return attributes.get(key);
     }
 
-    public Map<Column, Object> fetchValues(ObjectKey key) {
+    public Map<Column, RowValue> fetchValues(ObjectKey key) {
         Table table = key.getTable();
 
         Set<String> columnNames = table.getColumns().keySet();
@@ -74,7 +65,7 @@ public final class RowContext {
         sb.append(Joiner.on(" AND ").join(parts));
         ColumnTypeInfo info = adapter.getInfo();
 
-        Map<Column, Object> result = new LinkedHashMap<>();
+        Map<Column, RowValue> result = new LinkedHashMap<>();
         try (PreparedStatement st = connection.prepareStatement(sb.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 st.setObject(i+1, params.get(i));
@@ -89,12 +80,21 @@ public final class RowContext {
                         Column column = table.getColumn(columnName);
                         String columnType = column.getDataType();
 
-                        ColumnTypeDescription type = info.getType(columnType);
-                        if (isAcceptable(type.getType())) {
-                            result.put(column, rs.getObject(index));
-                        } else {
-                            result.put(column,"[" + columnType + "]");
-                        }
+                        RowValue v = accessor.get(rs, index);
+                        result.put(column, v);
+//                        result.put(column)
+
+//                        long dataLength = probeDataLength(rs, index);
+//                        if (dataLength > 256) {
+//                            result.put(column, "[" + columnType + ": length " + dataLength + "]");
+//                        }
+//
+//                        ColumnTypeDescription type = info.getType(columnType);
+//                        if (isAcceptable(type.getType())) {
+//                            result.put(column, rs.getObject(index));
+//                        } else {
+//                            result.put(column,"[" + columnType + "]");
+//                        }
                     }
                 }
             }
@@ -104,9 +104,63 @@ public final class RowContext {
         return result;
     }
 
-    private boolean isAcceptable(ColumnType type) {
-        return acceptableTypes.contains(type);
-    }
+//    private long probeDataLength(ResultSet rs, int index) throws SQLException {
+//        ResultSetMetaData md = rs.getMetaData();
+//        int sqlType = md.getColumnType(index);
+////        if (sqlType == Types. || sqlType == Types.CLOB || sqlType == Types.LONGVARCHAR || sqlType == Types.LONGNVARCHAR || sqlType == Types.LONGVARBINARY ||
+////        )
+//
+//
+//        Long dataLength = probeBlob(rs, index);
+//        if (dataLength != null) {
+//            return dataLength;
+//        }
+//
+//        dataLength = probeClob(rs, index);
+//        if (dataLength != null) {
+//            return dataLength;
+//        }
+//        return 0;
+//    }
+//
+//    private Long probeBlob(ResultSet rs, int index) throws SQLException {
+//        Blob blob = null;
+//        try {
+//            blob = rs.getBlob(index);
+//            if (blob != null) {
+//                return blob.length();
+//            }
+//        } finally {
+//            if (blob != null) {
+//                blob.free();
+//            }
+//        }
+//        return null;
+//    }
+//
+//    private Long probeClob(ResultSet rs, int index) throws SQLException {
+//        Clob clob = null;
+//        try {
+//            clob = rs.getClob(index);
+//            if (clob != null) {
+//                return clob.length();
+//            }
+//            clob = rs.getNClob(index);
+//            if (clob != null) {
+//                return clob.length();
+//            }
+//        } finally {
+//            if (clob != null) {
+//                clob.free();
+//            }
+//        }
+//        return null;
+//    }
+
+
+//    private boolean isAcceptable(ColumnType type) {
+//        return acceptableTypes.contains(type);
+//    }
 
     public Number backReferencesCount(Row row, ForeignKey foreignKey) {
         Table table = foreignKey.getTable();
@@ -115,7 +169,7 @@ public final class RowContext {
         query.append(adapter.qualifiedTableName(table));
         query.append(" WHERE ");
 
-        Map<UniqueConstraintColumn, Object> vs = row.getKeyValues();
+        Map<UniqueConstraintColumn, RowValue> vs = row.getKeyValues();
         BiMap<UniqueConstraintColumn, ForeignKeyColumn> mapping = foreignKey.getColumnMapping();
 
         List<String> parts = new ArrayList<>(vs.size());
@@ -123,7 +177,7 @@ public final class RowContext {
         vs.forEach((pkColumn, value) -> {
             ForeignKeyColumn fkColumn = mapping.get(pkColumn);
             parts.add(fkColumn.getColumn().getName() + " = ? ");
-            params.add(value);
+            params.add(value.get());
         });
 
         query.append(Joiner.on(" AND ").join(parts));
@@ -193,7 +247,7 @@ public final class RowContext {
     }
 
     private final class RowIterable implements Iterable<Row> {
-        private final List<Object> params;
+        private final List<RowValue> params;
         private final String query;
         private final Table fkTable;
 
@@ -228,7 +282,12 @@ public final class RowContext {
             }
 
             for (int i = 0; i < params.size(); i++) {
-                Object parameterValue = params.get(i);
+                RowValue p = params.get(i);
+                Object parameterValue = null;
+                if (p != null) {
+                    parameterValue = p.get();
+                }
+
                 try {
                     st.setObject(i + 1, parameterValue);
                 } catch (SQLException ex) {

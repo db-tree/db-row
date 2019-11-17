@@ -109,8 +109,9 @@ public final class ColumnTypeDescription {
         return conv;
     }
 
-    public void setConv(Converter conv) {
+    public ColumnTypeDescription setConv(Converter conv) {
         this.conv = conv;
+        return this;
     }
 
     @Override

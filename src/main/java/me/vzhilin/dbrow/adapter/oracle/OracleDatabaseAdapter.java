@@ -1,9 +1,6 @@
 package me.vzhilin.dbrow.adapter.oracle;
 
-import me.vzhilin.dbrow.adapter.ColumnTypeInfo;
-import me.vzhilin.dbrow.adapter.DatabaseAdapter;
-import me.vzhilin.dbrow.adapter.IdentifierCase;
-import me.vzhilin.dbrow.adapter.ValueConverter;
+import me.vzhilin.dbrow.adapter.*;
 import me.vzhilin.dbrow.catalog.Table;
 import me.vzhilin.dbrow.catalog.TableId;
 import org.apache.commons.dbutils.QueryRunner;
@@ -15,6 +12,7 @@ import java.sql.SQLException;
 public class OracleDatabaseAdapter implements DatabaseAdapter {
     private final OracleValueConverter conv;
     private final ColumnTypeInfo info = new OracleColumnTypeInfo();
+    private final ValueAccessor valueAccessor = new OracleValueAccessor();
 
     public OracleDatabaseAdapter() {
         this.conv = new OracleValueConverter();
@@ -70,6 +68,11 @@ public class OracleDatabaseAdapter implements DatabaseAdapter {
     @Override
     public ColumnTypeInfo getInfo() {
         return info;
+    }
+
+    @Override
+    public ValueAccessor getAccessor() {
+        return valueAccessor;
     }
 
     @Override

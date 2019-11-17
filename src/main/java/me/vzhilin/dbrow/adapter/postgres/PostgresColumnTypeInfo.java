@@ -24,6 +24,9 @@ public final class PostgresColumnTypeInfo extends BasicColumnTypeInfo {
     }
 
     private void addNumericTypes() {
+        addInteger("int2");
+        addInteger("int4");
+        addInteger("int8");
         addInteger("smallint").setAlias("int2");
         addInteger("integer").setAlias("int4");
         addInteger("bigint").setAlias("int8");
@@ -31,10 +34,12 @@ public final class PostgresColumnTypeInfo extends BasicColumnTypeInfo {
         addInteger("serial");
         addInteger("bigserial");
 
+        addDecimal("numeric").setHasLength().setHasPrecision();
         addDecimal("decimal").setAlias("numeric");
+        addFloat("float4");
+        addFloat("float8");
         addFloat("real").setAlias("float4");
         addFloat("double precision").setAlias("float8");
-        addDecimal("numeric").setHasLength().setHasPrecision();
     }
 
     private void addMonetaryTypes() {
@@ -42,6 +47,7 @@ public final class PostgresColumnTypeInfo extends BasicColumnTypeInfo {
     }
 
     private void addCharacterTypes() {
+        addString("bpchar").setMandatoryLength();
         addString("character varying").setAlias("varchar").setMandatoryLength();
         addString("varchar").setMandatoryLength();
         addString("character").setAlias("bpchar").setMandatoryLength();
@@ -63,6 +69,8 @@ public final class PostgresColumnTypeInfo extends BasicColumnTypeInfo {
     }
 
     private void addBooleanType() {
+        addColumnType(new ColumnTypeDescription("bool", ColumnType.BOOLEAN).setConv(BooleanConverter.INSTANCE));
+
         ColumnTypeDescription bool = new ColumnTypeDescription("boolean", ColumnType.BOOLEAN);
         bool.setConv(BooleanConverter.INSTANCE);
         addColumnType(bool.setAlias("bool"));

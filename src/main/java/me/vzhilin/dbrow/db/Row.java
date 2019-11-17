@@ -1,5 +1,6 @@
 package me.vzhilin.dbrow.db;
 
+import me.vzhilin.dbrow.adapter.RowValue;
 import me.vzhilin.dbrow.catalog.*;
 
 import java.util.*;
@@ -7,7 +8,7 @@ import java.util.*;
 public final class Row {
     private final ObjectKey key;
     private final RowContext ctx;
-    private final Map<Column, Object> values = new LinkedHashMap<>();
+    private final Map<Column, RowValue> values = new LinkedHashMap<>();
     private final Map<ForeignKey, Row> forwardReferences = new LinkedHashMap<>();
     private final Map<UniqueConstraint, Map<ForeignKey, Number>> backwardReferencesCount = new LinkedHashMap<>();
     private boolean loaded;
@@ -22,13 +23,13 @@ public final class Row {
         return ctx;
     }
 
-    public Object get(Column column) {
+    public RowValue get(Column column) {
         ensureLoaded();
 
         return values.get(column);
     }
 
-    public Object get(String column) {
+    public RowValue get(String column) {
         return get(key.getTable().getColumn(column));
     }
 
@@ -36,14 +37,14 @@ public final class Row {
         return key.getTable();
     }
 
-    public Map<Column, Object> getValues() {
+    public Map<Column, RowValue> getValues() {
         ensureLoaded();
         return Collections.unmodifiableMap(values);
     }
 
-    public Map<UniqueConstraintColumn, Object> getKeyValues() {
+    public Map<UniqueConstraintColumn, RowValue> getKeyValues() {
         ensureLoaded();
-        HashMap<UniqueConstraintColumn, Object> rs = new LinkedHashMap<>();
+        HashMap<UniqueConstraintColumn, RowValue> rs = new LinkedHashMap<>();
         UniqueConstraint pk = key.getCons();
         pk.getColumns().forEach(pkc -> rs.put(pkc, values.get(pkc.getColumn())));
         return rs;
@@ -110,9 +111,9 @@ public final class Row {
 
         final boolean[] hasNull = {false};
         fk.getColumnMapping().forEach((pkColumn, fkColumn) -> {
-            Object value = get(fkColumn.getColumn());
+            RowValue value = get(fkColumn.getColumn());
             if (!hasNull[0] && value != null) {
-                keyColumns.put(pkColumn, value);
+                keyColumns.put(pkColumn, value.get());
             } else {
                 hasNull[0] = true;
             }

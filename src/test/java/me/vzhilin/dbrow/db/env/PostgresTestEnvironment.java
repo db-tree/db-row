@@ -10,5 +10,6 @@ public final class PostgresTestEnvironment extends CatalogTestEnvironment {
         setPassword("dbrow");
         setJdbcUrl("jdbc:postgresql://localhost:5432/dbrow");
         setAdapter(new PostgresqlAdapter());
+        setNumberColumnType("numeric");
     }
 }

@@ -69,7 +69,6 @@ public class PostgresqlTests {
         }
     }
 
-
     @ParameterizedTest
     @ArgumentsSource(PostgresqlArgumentProvider.class)
     public void testParams(String type, Object value, String textValue) throws SQLException {

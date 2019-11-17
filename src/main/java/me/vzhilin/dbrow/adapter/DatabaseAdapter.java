@@ -22,4 +22,6 @@ public interface DatabaseAdapter {
     String qualifiedSchemaName(String schemaName);
 
     ColumnTypeInfo getInfo();
+
+    ValueAccessor getAccessor();
 }

@@ -37,6 +37,7 @@ public class MariadbColumnTypeInfo extends BasicColumnTypeInfo {
         addFloat("double precision").setAlias("double");
         addString("char").setHasLength();
         addString("varchar").setMandatoryLength();
+        addString("text");
         addString("tinytext");
         addString("longtext");
         addString("json").setAlias("longtext");
@@ -45,5 +46,4 @@ public class MariadbColumnTypeInfo extends BasicColumnTypeInfo {
             addDate(t);
         }
     }
-
 }

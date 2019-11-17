@@ -1,9 +1,7 @@
 package me.vzhilin.dbrow.adapter.mariadb;
 
-import me.vzhilin.dbrow.adapter.ColumnTypeInfo;
-import me.vzhilin.dbrow.adapter.DatabaseAdapter;
-import me.vzhilin.dbrow.adapter.IdentifierCase;
-import me.vzhilin.dbrow.adapter.ValueConverter;
+import me.vzhilin.dbrow.adapter.*;
+import me.vzhilin.dbrow.adapter.oracle.OracleValueAccessor;
 import me.vzhilin.dbrow.catalog.Table;
 import me.vzhilin.dbrow.catalog.TableId;
 import org.apache.commons.dbutils.QueryRunner;
@@ -14,6 +12,7 @@ import java.sql.SQLException;
 public class MariadbDatabaseAdapter implements DatabaseAdapter {
     private final ColumnTypeInfo info = new MariadbColumnTypeInfo();
     private final ValueConverter conv;
+    private final ValueAccessor valueAccessor = new OracleValueAccessor();
 
     public MariadbDatabaseAdapter() {
         conv = new MariadbValueConverter();
@@ -64,6 +63,11 @@ public class MariadbDatabaseAdapter implements DatabaseAdapter {
     @Override
     public ColumnTypeInfo getInfo() {
         return info;
+    }
+
+    @Override
+    public ValueAccessor getAccessor() {
+        return valueAccessor;
     }
 
     @Override

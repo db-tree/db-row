@@ -10,5 +10,6 @@ public final class OracleTestEnvironment extends CatalogTestEnvironment {
         setPassword("DB_ROW");
         setJdbcUrl("jdbc:oracle:thin:@localhost:1521:XE");
         setAdapter(new OracleDatabaseAdapter());
+        setNumberColumnType("number");
     }
 }

@@ -10,5 +10,6 @@ public final class MariadbTestEnvironment extends CatalogTestEnvironment {
         setPassword("dbrow");
         setJdbcUrl("jdbc:mariadb://localhost:3306/dbrow");
         setAdapter(new MariadbDatabaseAdapter());
+        setNumberColumnType("numeric");
     }
 }

@@ -83,8 +83,8 @@ public final class RowTests extends BaseTest {
             Row b200 = a100.forwardReference(fkB);
             Row c200 = a100.forwardReference(fkC);
 
-            assertEquals(new BigDecimal(400), b200.get(s("B2")));
-            assertEquals(new BigDecimal(405), c200.get(s("C2")));
+            assertEquals(new BigDecimal(400), b200.get(s("B2")).get());
+            assertEquals(new BigDecimal(405), c200.get(s("C2")).get());
 
             Map<UniqueConstraint, Map<ForeignKey, Number>> b200BackReferences = b200.backwardReferencesCount();
             UniqueConstraint ucB = b.getAnyUniqueConstraint();
