@@ -12,6 +12,7 @@ public class OracleValueAccessor extends BasicValueAccessor {
         switch (rs.getMetaData().getColumnTypeName(index)) {
             case "BINARY_FLOAT": return getFloat(rs, index);
             case "BINARY_DOUBLE": return getDouble(rs, index);
+            case "TIMESTAMP WITH TIME ZONE": return getTimestamp(rs, index);
             default: return super.get(rs, index);
         }
     }
